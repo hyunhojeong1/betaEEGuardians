@@ -12,6 +12,8 @@ import ProductEditForm from "@/components/shop/ProductEditForm";
 import TimeSlotSelector, {
   generateDefaultTimeSlots,
 } from "@/components/shop/TimeSlotSelector";
+import NoticeEditor from "@/components/shop/NoticeEditor";
+import NoticeBanner from "@/components/shop/NoticeBanner";
 import {
   saveOpenHours,
   getOpenHours,
@@ -24,7 +26,12 @@ import {
   deleteProduct,
   type ProductData,
 } from "@/services/product";
+import { getNotice } from "@/services/notice";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+  isTimeSlotExpired,
+  TIME_SLOT_EXPIRED_MESSAGE,
+} from "@/utils/timeSlotValidation";
 import type { Category1, Category2, Product } from "@/types/product";
 
 // 기본 시간대 데이터
@@ -41,7 +48,7 @@ function toProduct(data: ProductData): Product {
 
 export default function ShopPage() {
   const { role } = useUserStore();
-  const { addItem, setTimeSlot } = useCartStore();
+  const { addItem, setTimeSlot, selectedTimeSlot: cartTimeSlot } = useCartStore();
   const isStaff = role === "staff";
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,8 +59,9 @@ export default function ShopPage() {
     null
   );
   const [timeSlots, setTimeSlots] = useState(defaultTimeSlots);
+  // cartStore에서 저장된 시간대를 초기값으로 사용
   const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(
-    null
+    cartTimeSlot?.id || null
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingOpenHours, setIsSavingOpenHours] = useState(false);
@@ -73,6 +81,9 @@ export default function ShopPage() {
   const [showCategory1Form, setShowCategory1Form] = useState(false);
   const [showCategory2Form, setShowCategory2Form] = useState(false);
   const [showProductForm, setShowProductForm] = useState(false);
+
+  // 공지사항 상태
+  const [noticeComment, setNoticeComment] = useState("");
 
   // 검색어 debounce (1초)
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -110,14 +121,25 @@ export default function ShopPage() {
     []
   );
 
+  // 페이지 진입 시 저장된 시간대 만료 체크 (최초 1회)
+  useEffect(() => {
+    if (cartTimeSlot && isTimeSlotExpired(cartTimeSlot)) {
+      alert(TIME_SLOT_EXPIRED_MESSAGE);
+      setSelectedTimeSlotId(null);
+      setTimeSlot(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 최초 마운트 시에만 실행
+
   // 페이지 진입 시 데이터 불러오기
   useEffect(() => {
     async function fetchData() {
       try {
-        // openHours와 categories를 병렬로 불러오기
-        const [serverSlots, categoriesData] = await Promise.all([
+        // openHours, categories, notice를 병렬로 불러오기
+        const [serverSlots, categoriesData, notice] = await Promise.all([
           getOpenHours(),
           getCategories(),
+          getNotice(),
         ]);
 
         const updatedSlots = applyOpenHoursToSlots(
@@ -128,6 +150,7 @@ export default function ShopPage() {
 
         setCategories1(categoriesData.categories1);
         setCategories2(categoriesData.categories2);
+        setNoticeComment(notice);
 
         // 전체 상품 불러오기
         await fetchProducts();
@@ -183,15 +206,28 @@ export default function ShopPage() {
     (slot) => slot.id === selectedTimeSlotId
   );
 
-  // 카테고리1 변경 시 카테고리2 초기화
+  // 카테고리1 변경 시 카테고리2 초기화 + 검색어 초기화
   const handleCategory1Change = (id: string | null) => {
     setSelectedCategory1Id(id);
     setSelectedCategory2Id(null);
+    setSearchQuery("");
+  };
+
+  // 카테고리2 변경 시 검색어 초기화
+  const handleCategory2Change = (id: string | null) => {
+    setSelectedCategory2Id(id);
+    setSearchQuery("");
   };
 
   const handleAddToCart = (product: Product, quantity: number) => {
+    // 선택된 시간대가 만료되었는지 체크
+    if (cartTimeSlot && isTimeSlotExpired(cartTimeSlot)) {
+      alert(TIME_SLOT_EXPIRED_MESSAGE);
+      setSelectedTimeSlotId(null);
+      setTimeSlot(null);
+      return;
+    }
     addItem(product, quantity);
-    alert(`${product.name} ${quantity}개를 장바구니에 담았습니다.`);
   };
 
   const handleEditProduct = (product: Product) => {
@@ -280,13 +316,25 @@ export default function ShopPage() {
   const handleClearTimeSlot = () => {
     setSelectedTimeSlotId(null);
     setTimeSlot(null);
+    setSearchQuery("");
   };
 
   // 시간대 선택 핸들러 (장바구니에도 저장)
   const handleSelectTimeSlot = (slotId: string | null) => {
-    setSelectedTimeSlotId(slotId);
-    const slot = timeSlots.find((s) => s.id === slotId) || null;
-    setTimeSlot(slot);
+    if (slotId) {
+      const slot = timeSlots.find((s) => s.id === slotId);
+      if (slot && isTimeSlotExpired(slot)) {
+        alert(TIME_SLOT_EXPIRED_MESSAGE);
+        setSelectedTimeSlotId(null);
+        setTimeSlot(null);
+        return;
+      }
+      setSelectedTimeSlotId(slotId);
+      setTimeSlot(slot || null);
+    } else {
+      setSelectedTimeSlotId(null);
+      setTimeSlot(null);
+    }
   };
 
   if (isLoading) {
@@ -318,6 +366,16 @@ export default function ShopPage() {
           </div>
         )}
       </div>
+
+      {/* 공지사항: Staff는 편집 가능, Customer는 읽기만 */}
+      {isStaff ? (
+        <NoticeEditor
+          initialComment={noticeComment}
+          onSaveSuccess={(newComment) => setNoticeComment(newComment)}
+        />
+      ) : (
+        <NoticeBanner comment={noticeComment} />
+      )}
 
       {/* 배송 시간대 선택 */}
       <TimeSlotSelector
@@ -388,7 +446,7 @@ export default function ShopPage() {
           selectedCategory2Id={selectedCategory2Id}
           isStaff={isStaff}
           onSelectCategory1={handleCategory1Change}
-          onSelectCategory2={setSelectedCategory2Id}
+          onSelectCategory2={handleCategory2Change}
         />
       </div>
 

@@ -1,7 +1,16 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import CartItemCard from "@/components/cart/CartItemCard";
+import {
+  isTimeSlotExpired,
+  TIME_SLOT_EXPIRED_MESSAGE,
+} from "@/utils/timeSlotValidation";
+import { createOrder } from "@/services/order";
 
 export default function CartPage() {
+  const navigate = useNavigate();
+  const [isOrdering, setIsOrdering] = useState(false);
   const {
     items,
     selectedTimeSlot,
@@ -9,8 +18,57 @@ export default function CartPage() {
     updateQuantity,
     removeItem,
     clearCart,
+    setTimeSlot,
     getTotalPrice,
   } = useCartStore();
+
+  // 주문하기 버튼 클릭 핸들러
+  const handleOrder = async () => {
+    if (!selectedTimeSlot || items.length === 0) return;
+
+    // 시간대 만료 체크
+    if (isTimeSlotExpired(selectedTimeSlot)) {
+      alert(TIME_SLOT_EXPIRED_MESSAGE);
+      setTimeSlot(null);
+      navigate("/shop");
+      return;
+    }
+
+    setIsOrdering(true);
+
+    try {
+      // 주문 요청 데이터 생성 (productId와 quantity만 전송)
+      const orderItems = items.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+      }));
+
+      const response = await createOrder({
+        items: orderItems,
+        deliveryDate: orderDate || new Date().toISOString().split("T")[0],
+        deliveryTimeSlot: selectedTimeSlot,
+      });
+
+      if (response.success) {
+        alert(`주문이 완료되었습니다!\n총 금액: ${response.totalPrice?.toLocaleString()}원`);
+        clearCart();
+        navigate("/orders");
+      } else {
+        alert(`주문 실패: ${response.message}`);
+      }
+    } catch (error: unknown) {
+      console.error("주문 오류:", error);
+      // Firebase Functions 에러 메시지 추출
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.message?.includes("1일 1회만")) {
+        alert("주문 실패\n\n1일 1회만 주문이 가능합니다.");
+      } else {
+        alert("주문 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
+    } finally {
+      setIsOrdering(false);
+    }
+  };
 
   // 오늘 날짜 포맷팅
   const formatDate = (dateStr: string | null) => {
@@ -106,10 +164,15 @@ export default function CartPage() {
 
           {/* 주문하기 버튼 */}
           <button
-            disabled={!selectedTimeSlot}
+            onClick={handleOrder}
+            disabled={!selectedTimeSlot || isOrdering}
             className="w-full py-4 text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            {selectedTimeSlot ? "주문하기" : "배송 시간대를 선택해주세요"}
+            {isOrdering
+              ? "주문 처리 중..."
+              : selectedTimeSlot
+                ? "주문하기"
+                : "배송 시간대를 선택해주세요"}
           </button>
         </>
       )}

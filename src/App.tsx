@@ -4,11 +4,13 @@ import { HomePage, ShopPage, CartPage, OrdersPage } from "./pages";
 import VerificationGate from "./components/VerificationGate";
 import { useUserStore } from "./stores/userStore";
 import { useVerificationStore } from "./stores/verificationStore";
+import { useCartStore } from "./stores/cartStore";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { role, setRole } = useUserStore();
   const { setVerified } = useVerificationStore();
+  const cartItemCount = useCartStore((state) => state.items.length);
 
   const toggleRole = () => {
     setRole(role === "customer" ? "staff" : "customer");
@@ -36,8 +38,13 @@ function App() {
               <Link to="/shop" className="text-gray-600 hover:text-blue-600">
                 장보기
               </Link>
-              <Link to="/cart" className="text-gray-600 hover:text-blue-600">
+              <Link to="/cart" className="text-gray-600 hover:text-blue-600 relative">
                 장바구니
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemCount > 99 ? "99+" : cartItemCount}
+                  </span>
+                )}
               </Link>
               <Link to="/orders" className="text-gray-600 hover:text-blue-600">
                 주문내역
@@ -114,10 +121,15 @@ function App() {
                 </Link>
                 <Link
                   to="/cart"
-                  className="px-2 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                  className="px-2 py-2 text-gray-600 hover:bg-gray-100 rounded flex items-center gap-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   장바구니
+                  {cartItemCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
+                    </span>
+                  )}
                 </Link>
                 <Link
                   to="/orders"

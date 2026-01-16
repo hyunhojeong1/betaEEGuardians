@@ -22,6 +22,13 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [showAddedMessage, setShowAddedMessage] = useState(false);
+
+  const handleAddToCart = () => {
+    onAddToCart(product, quantity);
+    setShowAddedMessage(true);
+    setTimeout(() => setShowAddedMessage(false), 2000);
+  };
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
@@ -110,13 +117,20 @@ export default function ProductCard({
               )}
             </div>
             {!isStaff && (
-              <button
-                onClick={() => onAddToCart(product, quantity)}
-                disabled={!product.inStock}
-                className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                담기
-              </button>
+              <div className="flex flex-col items-end">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!product.inStock}
+                  className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  담기
+                </button>
+                {showAddedMessage && (
+                  <span className="text-xs text-green-600 mt-1">
+                    장바구니에 담았습니다!
+                  </span>
+                )}
+              </div>
             )}
           </div>
 

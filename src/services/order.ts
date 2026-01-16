@@ -1,0 +1,36 @@
+import { httpsCallable } from "firebase/functions";
+import { functions } from "@/services/firebase";
+import type { CreateOrderRequest, CreateOrderResponse, GetOrdersResponse } from "@/types/order";
+
+/**
+ * 주문 생성 (Cloud Function 호출)
+ * - 프론트에서는 productId와 quantity만 전송
+ * - 서버에서 products 컬렉션에서 가격 정보를 조회하여 계산
+ * - 가격 조작 방지를 위해 서버에서 가격 검증 및 계산
+ */
+export async function createOrder(
+  data: CreateOrderRequest
+): Promise<CreateOrderResponse> {
+  const createOrderFn = httpsCallable<CreateOrderRequest, CreateOrderResponse>(
+    functions,
+    "createOrder"
+  );
+
+  const result = await createOrderFn(data);
+  return result.data;
+}
+
+/**
+ * 주문 내역 조회 (Cloud Function 호출)
+ * - customer: 본인의 주문 내역만 조회
+ * - staff: 모든 주문 내역 조회
+ */
+export async function getOrders(): Promise<GetOrdersResponse> {
+  const getOrdersFn = httpsCallable<void, GetOrdersResponse>(
+    functions,
+    "getOrders"
+  );
+
+  const result = await getOrdersFn();
+  return result.data;
+}
