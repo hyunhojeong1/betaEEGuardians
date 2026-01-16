@@ -35,15 +35,20 @@ export default function ProductCard({
   };
 
   // 최소 주문당 가격 기준으로 계산
-  const totalPrice = (product.pricePerMinOrder || product.pricePerUnit) * quantity;
+  const totalPrice =
+    (product.pricePerMinOrder || product.pricePerUnit) * quantity;
 
   // 실제 주문 수량 계산 (최소 주문 수량 * 유저 조절값)
   const actualQuantity = product.orderMinQuantity * quantity;
   const quantityDisplay = `${actualQuantity}${product.orderUnit}`;
 
   // 카테고리 이름 가져오기
-  const category1Name = categories1.find((c) => c.id === product.category1Id)?.name || product.category1Id;
-  const category2Name = categories2.find((c) => c.id === product.category2Id)?.name || product.category2Id;
+  const category1Name =
+    categories1.find((c) => c.id === product.category1Id)?.name ||
+    product.category1Id;
+  const category2Name =
+    categories2.find((c) => c.id === product.category2Id)?.name ||
+    product.category2Id;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
@@ -58,7 +63,9 @@ export default function ProductCard({
               onError={() => setImageError(true)}
             />
           ) : (
-            <span className="text-gray-400 text-xs text-center px-1">No Image</span>
+            <span className="text-gray-400 text-xs text-center px-1">
+              No Image
+            </span>
           )}
         </div>
 
@@ -83,7 +90,9 @@ export default function ProductCard({
               >
                 -
               </button>
-              <span className="min-w-[60px] text-center text-sm font-medium">{quantityDisplay}</span>
+              <span className="min-w-[60px] text-center text-sm font-medium">
+                {quantityDisplay}
+              </span>
               <button
                 onClick={() => handleQuantityChange(1)}
                 className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm"
@@ -113,7 +122,9 @@ export default function ProductCard({
           <div className="flex items-center justify-between mb-1">
             <div className="flex-1">
               {product.specifications && (
-                <p className="text-xs text-gray-400">{product.specifications}</p>
+                <p className="text-xs text-gray-400">
+                  {product.specifications}
+                </p>
               )}
             </div>
             {!isStaff && (
@@ -139,16 +150,19 @@ export default function ProductCard({
             <div className="text-gray-400">
               {(product.expiryDate || product.consumptionDeadline) && (
                 <span>
-                  {product.expiryDate && `유통: ${product.expiryDate}`}
+                  {product.expiryDate && `유통기한: ${product.expiryDate}`}
                   {product.expiryDate && product.consumptionDeadline && " / "}
-                  {product.consumptionDeadline && `소비: ${product.consumptionDeadline}`}
+                  {product.consumptionDeadline &&
+                    `소비기한: ${product.consumptionDeadline}`}
                 </span>
               )}
             </div>
             {isStaff && (
               <div className="text-gray-400 flex gap-2">
                 <span>{product.estimatedVolumePerMinUnit}ml</span>
-                <span className="font-mono">{product.packagingIndependenceCode}</span>
+                <span className="font-mono">
+                  {product.packagingIndependenceCode}
+                </span>
               </div>
             )}
           </div>
@@ -157,15 +171,25 @@ export default function ProductCard({
           <div className="flex items-start justify-between mt-1">
             <div className="flex-1 min-w-0">
               {product.description && (
-                <p className="text-xs text-gray-400 line-clamp-2">{product.description}</p>
+                <p className="text-xs text-gray-400 line-clamp-2">
+                  {product.description}
+                </p>
               )}
             </div>
             {isStaff && (
               <div className="flex items-center gap-2 text-xs flex-shrink-0 ml-2">
-                <span className={product.inStock ? "text-green-600" : "text-red-500"}>
+                <span
+                  className={
+                    product.inStock ? "text-green-600" : "text-red-500"
+                  }
+                >
                   {product.inStock ? "재고O" : "재고X"}
                 </span>
-                <span className={product.isActive ? "text-blue-600" : "text-gray-400"}>
+                <span
+                  className={
+                    product.isActive ? "text-blue-600" : "text-gray-400"
+                  }
+                >
                   {product.isActive ? "노출O" : "노출X"}
                 </span>
               </div>

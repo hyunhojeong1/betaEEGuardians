@@ -38,3 +38,15 @@ export interface CreateOrderResponse {
   orderId?: string;
   totalPrice?: number;
 }
+
+// 주문 취소 요청
+export interface CancelOrderRequest {
+  deliverySlotKey: string;
+}
+
+// 주문 취소 응답
+export interface CancelOrderResponse {
+  success: boolean;
+  message: string;
+  deletedCount: number;
+}

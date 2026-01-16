@@ -43,14 +43,18 @@ export default function CartPage() {
         quantity: item.quantity,
       }));
 
+      // 한국 시간 기준 오늘 날짜 (fallback용)
+      const now = new Date();
+      const koreaDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const todayKorea = koreaDate.toISOString().split("T")[0];
+
       const response = await createOrder({
         items: orderItems,
-        deliveryDate: orderDate || new Date().toISOString().split("T")[0],
+        deliveryDate: orderDate || todayKorea,
         deliveryTimeSlot: selectedTimeSlot,
       });
 
       if (response.success) {
-        alert(`주문이 완료되었습니다!\n총 금액: ${response.totalPrice?.toLocaleString()}원`);
         clearCart();
         navigate("/orders");
       } else {

@@ -1,6 +1,12 @@
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/services/firebase";
-import type { CreateOrderRequest, CreateOrderResponse, GetOrdersResponse } from "@/types/order";
+import type {
+  CreateOrderRequest,
+  CreateOrderResponse,
+  GetOrdersResponse,
+  CancelOrderRequest,
+  CancelOrderResponse,
+} from "@/types/order";
 
 /**
  * 주문 생성 (Cloud Function 호출)
@@ -32,5 +38,22 @@ export async function getOrders(): Promise<GetOrdersResponse> {
   );
 
   const result = await getOrdersFn();
+  return result.data;
+}
+
+/**
+ * 주문 취소 (Cloud Function 호출)
+ * - deliverySlotKey로 해당 주문 그룹의 모든 품목 삭제
+ * - customer 전용 (staff는 사용 불가)
+ */
+export async function cancelOrder(
+  data: CancelOrderRequest
+): Promise<CancelOrderResponse> {
+  const cancelOrderFn = httpsCallable<CancelOrderRequest, CancelOrderResponse>(
+    functions,
+    "cancelOrder"
+  );
+
+  const result = await cancelOrderFn(data);
   return result.data;
 }

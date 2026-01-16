@@ -60,7 +60,10 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [], selectedTimeSlot: null, orderDate: null }),
 
       setTimeSlot: (slot, date) => {
-        const today = new Date().toISOString().split("T")[0];
+        // 한국 시간 기준 오늘 날짜
+        const now = new Date();
+        const koreaDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+        const today = koreaDate.toISOString().split("T")[0];
         set({
           selectedTimeSlot: slot,
           orderDate: date || today
