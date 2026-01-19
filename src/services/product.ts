@@ -20,8 +20,6 @@ interface AddProductRequest {
   packagingIndependenceCode: string;
   tags: string[];
   specifications?: string;
-  expiryDate?: string;
-  consumptionDeadline?: string;
 }
 
 interface AddProductResponse {
@@ -49,8 +47,6 @@ export interface ProductData {
   packagingIndependenceCode: string;
   tags: string[];
   specifications?: string;
-  expiryDate?: string;
-  consumptionDeadline?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -2,9 +2,24 @@ import { httpsCallable } from "firebase/functions";
 import { functions } from "@/services/firebase";
 import type { TimeSlot } from "@/types/product";
 
+export type DateType = "today" | "tomorrow";
+
+// 슬롯 정보 (중첩 구조)
+export interface SlotInfo {
+  isEnabled: boolean;
+  comment?: string;
+  reservation?: number; // 해당 시간대 예약 건수
+}
+
 interface TimeSlotData {
   id: string;
   isEnabled: boolean;
+  comment?: string;
+}
+
+interface SaveOpenHoursRequest {
+  slots: TimeSlotData[];
+  dateType: DateType;
 }
 
 interface SaveOpenHoursResponse {
@@ -12,76 +27,69 @@ interface SaveOpenHoursResponse {
   message: string;
 }
 
+interface GetOpenHoursRequest {
+  dateType: DateType;
+}
+
 interface GetOpenHoursResponse {
-  slots: Record<string, boolean> | null;
+  slots: Record<string, SlotInfo> | null;
 }
 
 /**
  * 배송 시간대 저장 (Staff 전용)
+ * @param slots 시간대 배열
+ * @param dateType 오늘(today) 또는 익일(tomorrow)
  */
 export async function saveOpenHours(
-  slots: TimeSlot[]
+  slots: TimeSlot[],
+  dateType: DateType
 ): Promise<SaveOpenHoursResponse> {
   const saveOpenHoursFn = httpsCallable<
-    { slots: TimeSlotData[] },
+    SaveOpenHoursRequest,
     SaveOpenHoursResponse
   >(functions, "saveOpenHours");
 
   const slotData: TimeSlotData[] = slots.map((slot) => ({
     id: slot.id,
     isEnabled: slot.isEnabled,
+    comment: slot.comment || "",
   }));
 
-  const result = await saveOpenHoursFn({ slots: slotData });
+  const result = await saveOpenHoursFn({ slots: slotData, dateType });
   return result.data;
 }
 
 /**
  * 배송 시간대 조회
+ * @param dateType 오늘(today) 또는 익일(tomorrow)
  */
-export async function getOpenHours(): Promise<Record<string, boolean> | null> {
-  const getOpenHoursFn = httpsCallable<void, GetOpenHoursResponse>(
+export async function getOpenHours(dateType: DateType = "today"): Promise<Record<string, SlotInfo> | null> {
+  const getOpenHoursFn = httpsCallable<GetOpenHoursRequest, GetOpenHoursResponse>(
     functions,
     "getOpenHours"
   );
 
-  const result = await getOpenHoursFn();
+  const result = await getOpenHoursFn({ dateType });
   return result.data.slots;
 }
 
 /**
- * 현재 시간 기준으로 주문 가능한 최소 시간대 계산
- * (현재 시간 + 2시간 이후의 시간대부터 주문 가능)
- */
-function getMinAvailableHour(): number {
-  const now = new Date();
-  const currentHour = now.getHours();
-  // 현재 시간 + 2시간 = 최소 주문 가능 시간대의 시작 시간
-  return currentHour + 2;
-}
-
-/**
  * 서버에서 받은 slots 데이터를 TimeSlot 배열에 적용
- * - 서버에서 비활성화된 시간대는 비활성화
- * - 현재 시간 + 2시간 이전의 시간대도 비활성화
+ * - 서버에서 비활성화된 시간대만 비활성화
+ * - 코멘트도 함께 적용
  */
 export function applyOpenHoursToSlots(
   baseSlots: TimeSlot[],
-  serverSlots: Record<string, boolean> | null
+  serverSlots: Record<string, SlotInfo> | null
 ): TimeSlot[] {
-  const minAvailableHour = getMinAvailableHour();
-
   return baseSlots.map((slot) => {
-    // 서버에서 받은 활성화 상태 (없으면 기본값 사용)
-    const serverEnabled = serverSlots ? (serverSlots[slot.id] ?? slot.isEnabled) : slot.isEnabled;
-
-    // 현재 시간 + 2시간 이전 시간대는 비활성화
-    // slot.startHour가 minAvailableHour보다 작으면 주문 불가
-    const isTimeAvailable = slot.startHour >= minAvailableHour;
+    const serverSlot = serverSlots?.[slot.id];
 
     return {
       ...slot,
-      isEnabled: serverEnabled && isTimeAvailable,
+      isEnabled: serverSlot?.isEnabled ?? slot.isEnabled,
+      comment: serverSlot?.comment || "",
+      reservation: serverSlot?.reservation || 0,
     };
   });
 }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { addProduct } from "@/services/product";
 import { uploadProductImage, validateImageFile } from "@/services/imageUpload";
 import type { Category1, Category2, Product } from "@/types/product";
@@ -37,10 +37,6 @@ export default function ProductEditForm({
   const [packagingIndependenceCode, setPackagingIndependenceCode] = useState(
     product.packagingIndependenceCode
   );
-
-  // 날짜
-  const [expiryDate, setExpiryDate] = useState(product.expiryDate || "");
-  const [consumptionDeadline, setConsumptionDeadline] = useState(product.consumptionDeadline || "");
 
   // 태그
   const [tagInput, setTagInput] = useState("");
@@ -173,8 +169,6 @@ export default function ProductEditForm({
         packagingIndependenceCode: packagingIndependenceCode.trim(),
         tags,
         specifications: specifications.trim() || undefined,
-        expiryDate: expiryDate || undefined,
-        consumptionDeadline: consumptionDeadline || undefined,
       });
       alert(result.message || "상품이 수정되었습니다.");
       onSuccess();
@@ -189,19 +183,258 @@ export default function ProductEditForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-yellow-50 border border-yellow-300 rounded-xl p-5 shadow-sm w-full max-w-none"
-      style={{ minWidth: "800px" }}
+      className="bg-yellow-50 border border-yellow-300 rounded-xl p-3 sm:p-5 shadow-sm w-full"
     >
-      <div className="flex items-center justify-between mb-4 pb-2 border-b border-yellow-300">
-        <h3 className="text-sm font-semibold text-yellow-800">
-          상품 편집: {product.id}
+      {/* 헤더 */}
+      <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 border-b border-yellow-300">
+        <h3 className="text-base sm:text-sm font-semibold text-yellow-800">
+          편집: {product.id}
         </h3>
-        <span className="text-xs text-gray-500">
+        <span className="text-sm sm:text-xs text-gray-500">
           {getCategory1Name()} &gt; {getCategory2Name()}
         </span>
       </div>
 
-      <div className="flex gap-5">
+      {/* ===== 모바일 레이아웃 (sm 미만) ===== */}
+      <div className="sm:hidden space-y-3">
+        {/* 상단: 이미지 + 상품명/가격/공급처 */}
+        <div className="flex gap-3">
+          {/* 이미지 */}
+          <div className="flex-shrink-0 w-20">
+            <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="상품 이미지"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <span className="text-xs text-gray-400">No Image</span>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              disabled={isSubmitting || isUploading}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting || isUploading}
+              className="w-full mt-1.5 px-2 py-1.5 text-xs text-white bg-gray-600 rounded hover:bg-gray-700 disabled:bg-gray-400"
+            >
+              {isUploading ? "..." : "이미지"}
+            </button>
+          </div>
+
+          {/* 핵심 정보 */}
+          <div className="flex-1 min-w-0 space-y-2">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="상품명 *"
+              className="w-full px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+            <div className="flex gap-1 items-center">
+              <input
+                type="number"
+                value={pricePerUnit || ""}
+                onChange={(e) => setPricePerUnit(Number(e.target.value))}
+                placeholder="가격"
+                className="w-20 px-2 py-2 border border-gray-300 rounded text-base"
+                disabled={isSubmitting}
+              />
+              <span className="text-sm text-gray-500">원/</span>
+              <input
+                type="text"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="단위"
+                className="w-14 px-2 py-2 border border-gray-300 rounded text-base"
+                disabled={isSubmitting}
+              />
+            </div>
+            <input
+              type="text"
+              value={supplier}
+              onChange={(e) => setSupplier(e.target.value)}
+              placeholder="공급처 *"
+              className="w-full px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+          </div>
+        </div>
+
+        {/* 주문 정보 (2열 그리드) */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={orderMinQuantity || ""}
+              onChange={(e) => setOrderMinQuantity(Number(e.target.value))}
+              placeholder="최소"
+              className="w-14 px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+            <input
+              type="text"
+              value={orderUnit}
+              onChange={(e) => setOrderUnit(e.target.value)}
+              placeholder="단위"
+              className="flex-1 px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={pricePerMinOrder || ""}
+              onChange={(e) => setPricePerMinOrder(Number(e.target.value))}
+              placeholder="최소가"
+              className="flex-1 px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+            <span className="text-sm text-gray-500">원</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={estimatedVolumePerMinUnit || ""}
+              onChange={(e) => setEstimatedVolumePerMinUnit(Number(e.target.value))}
+              placeholder="ml"
+              className="w-16 px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+            <input
+              type="text"
+              value={packagingIndependenceCode}
+              onChange={(e) => setPackagingIndependenceCode(e.target.value)}
+              placeholder="코드"
+              className="flex-1 px-2 py-2 border border-gray-300 rounded text-base"
+              disabled={isSubmitting}
+            />
+          </div>
+          {/* 상태 체크박스 */}
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={inStock}
+                onChange={(e) => setInStock(e.target.checked)}
+                className="w-5 h-5 text-blue-600"
+                disabled={isSubmitting}
+              />
+              <span className="text-base text-gray-600">재고</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="w-5 h-5 text-blue-600"
+                disabled={isSubmitting}
+              />
+              <span className="text-base text-gray-600">노출</span>
+            </label>
+          </div>
+        </div>
+
+        {/* 스펙/설명 (접힌 상태로 간략화) */}
+        <div className="space-y-2">
+          <input
+            type="text"
+            value={specifications}
+            onChange={(e) => setSpecifications(e.target.value)}
+            placeholder="제품 스펙"
+            className="w-full px-2 py-2 border border-gray-300 rounded text-base"
+            disabled={isSubmitting}
+          />
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="상품 설명"
+            className="w-full px-2 py-2 border border-gray-300 rounded text-base"
+            disabled={isSubmitting}
+          />
+        </div>
+
+        {/* 태그 */}
+        <div className="flex gap-1 items-center">
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddTag();
+              }
+            }}
+            placeholder="태그"
+            className="flex-1 px-2 py-2 border border-gray-300 rounded text-base"
+            disabled={isSubmitting}
+          />
+          <button
+            type="button"
+            onClick={handleAddTag}
+            disabled={isSubmitting || !tagInput.trim()}
+            className="px-3 py-2 text-base text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-300"
+          >
+            +
+          </button>
+        </div>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+              >
+                #{tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(index)}
+                  disabled={isSubmitting}
+                  className="text-gray-400 hover:text-red-500 text-lg"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* 버튼 */}
+        <div className="flex gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="flex-1 px-4 py-3 text-base text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 px-4 py-3 text-base text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 disabled:bg-gray-400"
+          >
+            {isSubmitting ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
+
+      {/* ===== PC 레이아웃 (sm 이상) ===== */}
+      <div className="hidden sm:flex gap-5">
         {/* 왼쪽: 이미지 영역 */}
         <div className="flex-shrink-0 w-28 space-y-2">
           <div className="w-28 h-28 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
@@ -312,28 +545,7 @@ export default function ProductEditForm({
             />
           </div>
 
-          {/* Row 5: 유통기한, 소비기한 */}
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">유통기한 / 소비기한</label>
-            <div className="flex gap-2">
-              <input
-                type="date"
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs"
-                disabled={isSubmitting}
-              />
-              <input
-                type="date"
-                value={consumptionDeadline}
-                onChange={(e) => setConsumptionDeadline(e.target.value)}
-                className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs"
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
-
-          {/* Row 6: 상품 설명 */}
+          {/* Row 5: 상품 설명 */}
           <div>
             <label className="block text-xs text-gray-500 mb-1">상품 설명</label>
             <textarea
@@ -507,7 +719,7 @@ export default function ProductEditForm({
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+      {error && <p className="text-red-500 text-sm sm:text-xs mt-2">{error}</p>}
     </form>
   );
 }

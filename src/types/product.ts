@@ -30,8 +30,6 @@ export interface Product {
   packagingIndependenceCode: string; // 포장독립성 코드
   tags: string[]; // 검색 키워드
   specifications?: string; // 제품 사이즈, 향, 맛 등 스펙
-  expiryDate?: string; // 유통기한
-  consumptionDeadline?: string; // 소비기한
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,8 +41,10 @@ export interface CartItem {
 
 export interface TimeSlot {
   id: string;
-  label: string; // "08:00 - 09:00"
+  label: string; // "10:00 - 11:00"
   startHour: number;
   endHour: number;
   isEnabled: boolean;
+  comment?: string; // 시간대별 코멘트 (예: "오전 8시 30분 예약 마감!")
+  reservation?: number; // 현 시간대에 걸린 예약 건수
 }

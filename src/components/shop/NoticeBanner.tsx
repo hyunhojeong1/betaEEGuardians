@@ -9,10 +9,10 @@ export default function NoticeBanner({ comment }: NoticeBannerProps) {
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4">
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-3 mb-4">
       <div className="flex items-center gap-2">
-        <span className="text-blue-600 text-sm font-medium">공지:</span>
-        <span className="text-blue-700 text-sm">{comment}</span>
+        <span className="text-blue-600 text-base sm:text-sm font-medium">공지:</span>
+        <span className="text-blue-700 text-base sm:text-sm">{comment}</span>
       </div>
     </div>
   );

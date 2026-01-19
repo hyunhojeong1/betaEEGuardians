@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
-import { HomePage, ShopPage, CartPage, OrdersPage } from "./pages";
+import { HomePage, ShopPage, CartPage, OrdersPage, StaffTodoPage } from "./pages";
 import VerificationGate from "./components/VerificationGate";
 import { useUserStore } from "./stores/userStore";
 import { useVerificationStore } from "./stores/verificationStore";
@@ -49,6 +49,11 @@ function App() {
               <Link to="/orders" className="text-gray-600 hover:text-blue-600">
                 주문내역
               </Link>
+              {role === "staff" && (
+                <Link to="/staff-todo" className="text-purple-600 hover:text-purple-700 font-medium">
+                  직원To-do
+                </Link>
+              )}
 
               {/* 개발용 토글 버튼 */}
               <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
@@ -138,6 +143,15 @@ function App() {
                 >
                   주문내역
                 </Link>
+                {role === "staff" && (
+                  <Link
+                    to="/staff-todo"
+                    className="px-2 py-2 text-purple-600 hover:bg-purple-50 rounded font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    직원To-do
+                  </Link>
+                )}
 
                 {/* 개발용 토글 버튼 */}
                 <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
@@ -171,6 +185,7 @@ function App() {
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/staff-todo" element={<StaffTodoPage />} />
           </Routes>
         </VerificationGate>
       </main>

@@ -11,10 +11,10 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="상품 검색..."
-        className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+        className="w-full px-4 py-3.5 sm:py-3 pl-11 sm:pl-10 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm"
       />
       <svg
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+        className="absolute left-3.5 sm:left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

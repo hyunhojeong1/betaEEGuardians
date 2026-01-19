@@ -18,6 +18,7 @@ import {
   saveOpenHours,
   getOpenHours,
   applyOpenHoursToSlots,
+  type DateType,
 } from "@/services/openHours";
 import { getCategories } from "@/services/category";
 import {
@@ -33,6 +34,35 @@ import {
   TIME_SLOT_EXPIRED_MESSAGE,
 } from "@/utils/timeSlotValidation";
 import type { Category1, Category2, Product } from "@/types/product";
+
+// 한국 시간 기준 날짜 유틸리티
+function getKoreaDate(offset = 0): Date {
+  const now = new Date();
+  const koreaTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  koreaTime.setDate(koreaTime.getDate() + offset);
+  return koreaTime;
+}
+
+function formatKoreaDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
+}
+
+function getDateString(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function getDayOfWeek(date: Date): string {
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  return days[date.getUTCDay()];
+}
+
+// 선택한 날짜가 일요일인지 체크
+function isSundayDate(date: Date): boolean {
+  return date.getUTCDay() === 0;
+}
 
 // 기본 시간대 데이터
 const defaultTimeSlots = generateDefaultTimeSlots();
@@ -85,6 +115,11 @@ export default function ShopPage() {
   // 공지사항 상태
   const [noticeComment, setNoticeComment] = useState("");
 
+  // 날짜 선택 상태 (0: 오늘, 1: 익일)
+  const [selectedDateOffset, setSelectedDateOffset] = useState(0);
+  const selectedDate = getKoreaDate(selectedDateOffset);
+  const selectedDateStr = getDateString(selectedDate);
+
   // 검색어 debounce (1초)
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -131,22 +166,18 @@ export default function ShopPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 최초 마운트 시에만 실행
 
-  // 페이지 진입 시 데이터 불러오기
+  // 현재 선택된 날짜 타입 (today/tomorrow)
+  const currentDateType: DateType = selectedDateOffset === 0 ? "today" : "tomorrow";
+
+  // 페이지 진입 시 데이터 불러오기 (최초 1회)
   useEffect(() => {
-    async function fetchData() {
+    async function fetchInitialData() {
       try {
-        // openHours, categories, notice를 병렬로 불러오기
-        const [serverSlots, categoriesData, notice] = await Promise.all([
-          getOpenHours(),
+        // categories, notice, products를 병렬로 불러오기
+        const [categoriesData, notice] = await Promise.all([
           getCategories(),
           getNotice(),
         ]);
-
-        const updatedSlots = applyOpenHoursToSlots(
-          defaultTimeSlots,
-          serverSlots
-        );
-        setTimeSlots(updatedSlots);
 
         setCategories1(categoriesData.categories1);
         setCategories2(categoriesData.categories2);
@@ -155,14 +186,48 @@ export default function ShopPage() {
         // 전체 상품 불러오기
         await fetchProducts();
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Failed to fetch initial data:", error);
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchData();
+    fetchInitialData();
   }, [fetchProducts]);
+
+  // 날짜 변경 시 openHours 다시 불러오기 및 시간대 선택 초기화
+  useEffect(() => {
+    async function fetchOpenHoursForDate() {
+      try {
+        // 선택한 날짜가 일요일인지 체크 (selectedDateOffset 기준으로 계산)
+        const dateToCheck = getKoreaDate(selectedDateOffset);
+        if (isSundayDate(dateToCheck)) {
+          const sundaySlots = defaultTimeSlots.map((slot) => ({
+            ...slot,
+            isEnabled: false,
+            comment: "휴무일입니다.",
+            reservation: 0,
+          }));
+          setTimeSlots(sundaySlots);
+          setSelectedTimeSlotId(null);
+          setTimeSlot(null);
+          return;
+        }
+
+        const serverSlots = await getOpenHours(currentDateType);
+        const updatedSlots = applyOpenHoursToSlots(defaultTimeSlots, serverSlots);
+        setTimeSlots(updatedSlots);
+        // 날짜 변경 시 시간대 선택 초기화
+        setSelectedTimeSlotId(null);
+        setTimeSlot(null);
+      } catch (error) {
+        console.error("Failed to fetch open hours:", error);
+      }
+    }
+
+    fetchOpenHoursForDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDateType, selectedDateOffset]);
 
   // 카테고리 변경 또는 검색어 변경 시 상품 다시 불러오기 (debounce 적용)
   useEffect(() => {
@@ -302,9 +367,9 @@ export default function ShopPage() {
   const handleUpdateTimeSlots = async (updatedSlots: typeof timeSlots) => {
     setIsSavingOpenHours(true);
     try {
-      await saveOpenHours(updatedSlots);
+      await saveOpenHours(updatedSlots, currentDateType);
       setTimeSlots(updatedSlots);
-      alert("배송 시간대가 저장되었습니다.");
+      alert(`${selectedDateOffset === 0 ? "오늘" : "익일"} 배송 시간대가 저장되었습니다.`);
     } catch (error) {
       console.error("Failed to save open hours:", error);
       alert("배송 시간대 저장에 실패했습니다.");
@@ -319,7 +384,7 @@ export default function ShopPage() {
     setSearchQuery("");
   };
 
-  // 시간대 선택 핸들러 (장바구니에도 저장)
+  // 시간대 선택 핸들러 (장바구니에도 저장, 날짜 포함)
   const handleSelectTimeSlot = (slotId: string | null) => {
     if (slotId) {
       const slot = timeSlots.find((s) => s.id === slotId);
@@ -330,7 +395,8 @@ export default function ShopPage() {
         return;
       }
       setSelectedTimeSlotId(slotId);
-      setTimeSlot(slot || null);
+      // 선택한 날짜와 함께 시간대 저장
+      setTimeSlot(slot || null, selectedDateStr);
     } else {
       setSelectedTimeSlotId(null);
       setTimeSlot(null);
@@ -355,7 +421,7 @@ export default function ShopPage() {
         {selectedTimeSlot && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-              오늘 {selectedTimeSlot.label} 배송
+              {selectedDateOffset === 0 ? "오늘" : "익일"} {selectedTimeSlot.label} 배송
             </span>
             <button
               onClick={handleClearTimeSlot}
@@ -377,7 +443,7 @@ export default function ShopPage() {
         <NoticeBanner comment={noticeComment} />
       )}
 
-      {/* 배송 시간대 선택 */}
+      {/* 배송 날짜 & 시간대 선택 (통합) */}
       <TimeSlotSelector
         timeSlots={timeSlots}
         selectedSlotId={selectedTimeSlotId}
@@ -385,6 +451,11 @@ export default function ShopPage() {
         isSaving={isSavingOpenHours}
         onSelectSlot={handleSelectTimeSlot}
         onUpdateSlots={handleUpdateTimeSlots}
+        selectedDate={selectedDate}
+        selectedDateOffset={selectedDateOffset}
+        onDateOffsetChange={setSelectedDateOffset}
+        formatDate={formatKoreaDate}
+        getDayOfWeek={getDayOfWeek}
       />
 
       {/* 검색바 */}

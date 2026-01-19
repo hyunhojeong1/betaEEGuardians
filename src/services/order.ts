@@ -6,6 +6,8 @@ import type {
   GetOrdersResponse,
   CancelOrderRequest,
   CancelOrderResponse,
+  UpdateOrderStatusRequest,
+  UpdateOrderStatusResponse,
 } from "@/types/order";
 
 /**
@@ -55,5 +57,21 @@ export async function cancelOrder(
   );
 
   const result = await cancelOrderFn(data);
+  return result.data;
+}
+
+/**
+ * 주문 상태 업데이트 (Cloud Function 호출)
+ * - Staff 전용: 각 주문 품목의 staffStatusCheck 업데이트
+ */
+export async function updateOrderStatus(
+  data: UpdateOrderStatusRequest
+): Promise<UpdateOrderStatusResponse> {
+  const updateOrderStatusFn = httpsCallable<
+    UpdateOrderStatusRequest,
+    UpdateOrderStatusResponse
+  >(functions, "updateOrderStatus");
+
+  const result = await updateOrderStatusFn(data);
   return result.data;
 }
