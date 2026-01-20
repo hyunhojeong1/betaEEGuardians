@@ -61,7 +61,7 @@ export default function RequestBanner() {
               <div className="space-y-3 mb-4">
                 <p className="text-base sm:text-sm text-gray-700">
                   원하시는 제품을 가능한 구체적으로 입력해주시면 입점 검토에
-                  도움이 됩니다! 의견주셔서 감사합니다.
+                  도움이 됩니다. 의견주셔서 감사합니다.
                 </p>
                 <p className="text-base sm:text-sm text-gray-500">
                   - 지환수는 식품, 생활 소모품만 취급하고 있습니다.(예: 샴푸,
