@@ -4,6 +4,8 @@ import gemini3 from "@/assets/Gemini_Generated_Image_3.png";
 import gemini4 from "@/assets/Gemini_Generated_Image_4.png";
 import gemini5 from "@/assets/Gemini_Generated_Image_5.jpg";
 import howToUse1 from "@/assets/how_to_use_1.png";
+import howToUse2 from "@/assets/how_to_use_2.png";
+import howToUse3 from "@/assets/how_to_use_3.png";
 
 // 이미지 카드 데이터
 const featureCards = [
@@ -59,6 +61,8 @@ export default function HomePage() {
           <li>주문 내역에서 배송 상태를 확인하세요</li>
         </ol>
         <img src={howToUse1} alt="htu1" className="w-200" />
+        <img src={howToUse2} alt="htu2" className="w-200" />
+        <img src={howToUse3} alt="htu2" className="w-200" />
       </section>
     </div>
   );
