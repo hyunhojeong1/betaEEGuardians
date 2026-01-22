@@ -9,17 +9,8 @@ import ProductCard from "@/components/shop/ProductCard";
 import { Category1Form, Category2Form } from "@/components/shop/CategoryForm";
 import ProductForm from "@/components/shop/ProductForm";
 import ProductEditForm from "@/components/shop/ProductEditForm";
-import TimeSlotSelector, {
-  generateDefaultTimeSlots,
-} from "@/components/shop/TimeSlotSelector";
 import NoticeEditor from "@/components/shop/NoticeEditor";
 import NoticeBanner from "@/components/shop/NoticeBanner";
-import {
-  saveOpenHours,
-  getOpenHours,
-  applyOpenHoursToSlots,
-  type DateType,
-} from "@/services/openHours";
 import { getCategories } from "@/services/category";
 import {
   getProducts,
@@ -29,43 +20,7 @@ import {
 } from "@/services/product";
 import { getNotice } from "@/services/notice";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  isTimeSlotExpired,
-  TIME_SLOT_EXPIRED_MESSAGE,
-} from "@/utils/timeSlotValidation";
 import type { Category1, Category2, Product } from "@/types/product";
-
-// 한국 시간 기준 날짜 유틸리티
-function getKoreaDate(offset = 0): Date {
-  const now = new Date();
-  const koreaTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  koreaTime.setDate(koreaTime.getDate() + offset);
-  return koreaTime;
-}
-
-function formatKoreaDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
-}
-
-function getDateString(date: Date): string {
-  return date.toISOString().split("T")[0];
-}
-
-function getDayOfWeek(date: Date): string {
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  return days[date.getUTCDay()];
-}
-
-// 선택한 날짜가 일요일인지 체크
-function isSundayDate(date: Date): boolean {
-  return date.getUTCDay() === 0;
-}
-
-// 기본 시간대 데이터
-const defaultTimeSlots = generateDefaultTimeSlots();
 
 // ProductData를 Product로 변환
 function toProduct(data: ProductData): Product {
@@ -78,7 +33,7 @@ function toProduct(data: ProductData): Product {
 
 export default function ShopPage() {
   const { role } = useUserStore();
-  const { addItem, setTimeSlot, selectedTimeSlot: cartTimeSlot } = useCartStore();
+  const { addItem, selectedTimeSlot: cartTimeSlot, orderDate } = useCartStore();
   const isStaff = role === "staff";
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,13 +43,7 @@ export default function ShopPage() {
   const [selectedCategory2Id, setSelectedCategory2Id] = useState<string | null>(
     null
   );
-  const [timeSlots, setTimeSlots] = useState(defaultTimeSlots);
-  // cartStore에서 저장된 시간대를 초기값으로 사용
-  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(
-    cartTimeSlot?.id || null
-  );
   const [isLoading, setIsLoading] = useState(true);
-  const [isSavingOpenHours, setIsSavingOpenHours] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   // 카테고리 상태
@@ -114,11 +63,6 @@ export default function ShopPage() {
 
   // 공지사항 상태
   const [noticeComment, setNoticeComment] = useState("");
-
-  // 날짜 선택 상태 (0: 오늘, 1: 익일)
-  const [selectedDateOffset, setSelectedDateOffset] = useState(0);
-  const selectedDate = getKoreaDate(selectedDateOffset);
-  const selectedDateStr = getDateString(selectedDate);
 
   // 검색어 debounce (1초)
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -156,19 +100,6 @@ export default function ShopPage() {
     []
   );
 
-  // 페이지 진입 시 저장된 시간대 만료 체크 (최초 1회)
-  useEffect(() => {
-    if (cartTimeSlot && isTimeSlotExpired(cartTimeSlot)) {
-      alert(TIME_SLOT_EXPIRED_MESSAGE);
-      setSelectedTimeSlotId(null);
-      setTimeSlot(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 최초 마운트 시에만 실행
-
-  // 현재 선택된 날짜 타입 (today/tomorrow)
-  const currentDateType: DateType = selectedDateOffset === 0 ? "today" : "tomorrow";
-
   // 페이지 진입 시 데이터 불러오기 (최초 1회)
   useEffect(() => {
     async function fetchInitialData() {
@@ -194,40 +125,6 @@ export default function ShopPage() {
 
     fetchInitialData();
   }, [fetchProducts]);
-
-  // 날짜 변경 시 openHours 다시 불러오기 및 시간대 선택 초기화
-  useEffect(() => {
-    async function fetchOpenHoursForDate() {
-      try {
-        // 선택한 날짜가 일요일인지 체크 (selectedDateOffset 기준으로 계산)
-        const dateToCheck = getKoreaDate(selectedDateOffset);
-        if (isSundayDate(dateToCheck)) {
-          const sundaySlots = defaultTimeSlots.map((slot) => ({
-            ...slot,
-            isEnabled: false,
-            comment: "휴무일입니다.",
-            reservation: 0,
-          }));
-          setTimeSlots(sundaySlots);
-          setSelectedTimeSlotId(null);
-          setTimeSlot(null);
-          return;
-        }
-
-        const serverSlots = await getOpenHours(currentDateType);
-        const updatedSlots = applyOpenHoursToSlots(defaultTimeSlots, serverSlots);
-        setTimeSlots(updatedSlots);
-        // 날짜 변경 시 시간대 선택 초기화
-        setSelectedTimeSlotId(null);
-        setTimeSlot(null);
-      } catch (error) {
-        console.error("Failed to fetch open hours:", error);
-      }
-    }
-
-    fetchOpenHoursForDate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDateType, selectedDateOffset]);
 
   // 카테고리 변경 또는 검색어 변경 시 상품 다시 불러오기 (debounce 적용)
   useEffect(() => {
@@ -266,11 +163,6 @@ export default function ShopPage() {
     );
   };
 
-  // 선택된 시간대 정보
-  const selectedTimeSlot = timeSlots.find(
-    (slot) => slot.id === selectedTimeSlotId
-  );
-
   // 카테고리1 변경 시 카테고리2 초기화 + 검색어 초기화
   const handleCategory1Change = (id: string | null) => {
     setSelectedCategory1Id(id);
@@ -285,13 +177,6 @@ export default function ShopPage() {
   };
 
   const handleAddToCart = (product: Product, quantity: number) => {
-    // 선택된 시간대가 만료되었는지 체크
-    if (cartTimeSlot && isTimeSlotExpired(cartTimeSlot)) {
-      alert(TIME_SLOT_EXPIRED_MESSAGE);
-      setSelectedTimeSlotId(null);
-      setTimeSlot(null);
-      return;
-    }
     addItem(product, quantity);
   };
 
@@ -364,43 +249,13 @@ export default function ShopPage() {
     refreshProducts();
   };
 
-  const handleUpdateTimeSlots = async (updatedSlots: typeof timeSlots) => {
-    setIsSavingOpenHours(true);
-    try {
-      await saveOpenHours(updatedSlots, currentDateType);
-      setTimeSlots(updatedSlots);
-      alert(`${selectedDateOffset === 0 ? "오늘" : "익일"} 배송 시간대가 저장되었습니다.`);
-    } catch (error) {
-      console.error("Failed to save open hours:", error);
-      alert("배송 시간대 저장에 실패했습니다.");
-    } finally {
-      setIsSavingOpenHours(false);
-    }
-  };
-
-  const handleClearTimeSlot = () => {
-    setSelectedTimeSlotId(null);
-    setTimeSlot(null);
-    setSearchQuery("");
-  };
-
-  // 시간대 선택 핸들러 (장바구니에도 저장, 날짜 포함)
-  const handleSelectTimeSlot = (slotId: string | null) => {
-    if (slotId) {
-      const slot = timeSlots.find((s) => s.id === slotId);
-      if (slot && isTimeSlotExpired(slot)) {
-        alert(TIME_SLOT_EXPIRED_MESSAGE);
-        setSelectedTimeSlotId(null);
-        setTimeSlot(null);
-        return;
-      }
-      setSelectedTimeSlotId(slotId);
-      // 선택한 날짜와 함께 시간대 저장
-      setTimeSlot(slot || null, selectedDateStr);
-    } else {
-      setSelectedTimeSlotId(null);
-      setTimeSlot(null);
-    }
+  // 날짜 포맷팅 (orderDate용)
+  const formatOrderDate = (dateStr: string | null) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
   };
 
   if (isLoading) {
@@ -418,18 +273,13 @@ export default function ShopPage() {
       {/* 타이틀 + 선택된 시간대 표시 */}
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">장보기</h1>
-        {selectedTimeSlot && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-              {selectedDateOffset === 0 ? "오늘" : "익일"} {selectedTimeSlot.label} 배송
-            </span>
-            <button
-              onClick={handleClearTimeSlot}
-              className="text-xs text-gray-400 hover:text-gray-600"
-            >
-              변경
-            </button>
-          </div>
+        {cartTimeSlot && (
+          <a
+            href="/cart"
+            className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100"
+          >
+            {orderDate && `${formatOrderDate(orderDate)} `}{cartTimeSlot.label} 배송
+          </a>
         )}
       </div>
 
@@ -442,21 +292,6 @@ export default function ShopPage() {
       ) : (
         <NoticeBanner comment={noticeComment} />
       )}
-
-      {/* 배송 날짜 & 시간대 선택 (통합) */}
-      <TimeSlotSelector
-        timeSlots={timeSlots}
-        selectedSlotId={selectedTimeSlotId}
-        isStaff={isStaff}
-        isSaving={isSavingOpenHours}
-        onSelectSlot={handleSelectTimeSlot}
-        onUpdateSlots={handleUpdateTimeSlots}
-        selectedDate={selectedDate}
-        selectedDateOffset={selectedDateOffset}
-        onDateOffsetChange={setSelectedDateOffset}
-        formatDate={formatKoreaDate}
-        getDayOfWeek={getDayOfWeek}
-      />
 
       {/* 검색바 */}
       <div className="mb-4">

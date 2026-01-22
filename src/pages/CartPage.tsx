@@ -1,21 +1,81 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
+import { useUserStore } from "@/stores/userStore";
 import CartItemCard from "@/components/cart/CartItemCard";
+import TimeSlotSelector, {
+  generateDefaultTimeSlots,
+} from "@/components/shop/TimeSlotSelector";
 import {
   isTimeSlotExpired,
   TIME_SLOT_EXPIRED_MESSAGE,
 } from "@/utils/timeSlotValidation";
+import {
+  saveOpenHours,
+  getOpenHours,
+  applyOpenHoursToSlots,
+  type DateType,
+} from "@/services/openHours";
 import { createOrder } from "@/services/order";
+import { getContainerBalance } from "@/services/container";
+
+// 한국 시간 기준 날짜 유틸리티
+function getKoreaDate(offset = 0): Date {
+  const now = new Date();
+  const koreaTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  koreaTime.setDate(koreaTime.getDate() + offset);
+  return koreaTime;
+}
+
+function formatKoreaDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
+}
+
+function getDateString(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function getDayOfWeek(date: Date): string {
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  return days[date.getUTCDay()];
+}
+
+// 선택한 날짜가 일요일인지 체크
+function isSundayDate(date: Date): boolean {
+  return date.getUTCDay() === 0;
+}
+
+// 기본 시간대 데이터
+const defaultTimeSlots = generateDefaultTimeSlots();
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { role } = useUserStore();
+  const isStaff = role === "staff";
+
   const [isOrdering, setIsOrdering] = useState(false);
   const [containerCount, setContainerCount] = useState(0);
   const [needsWashing, setNeedsWashing] = useState(true); // 기본값: 세척 후 사용
+
+  // 용기 보관 현황 (customer만)
+  const [containerBalance, setContainerBalance] = useState<number | null>(null);
+
+  // 시간대 선택 관련 state
+  const [timeSlots, setTimeSlots] = useState(defaultTimeSlots);
+  const [selectedDateOffset, setSelectedDateOffset] = useState(0);
+  const [isSavingOpenHours, setIsSavingOpenHours] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const selectedDate = getKoreaDate(selectedDateOffset);
+  const selectedDateStr = getDateString(selectedDate);
+  const currentDateType: DateType = selectedDateOffset === 0 ? "today" : "tomorrow";
+
   const {
     items,
-    selectedTimeSlot,
+    selectedTimeSlot: cartTimeSlot,
     orderDate,
     updateQuantity,
     removeItem,
@@ -23,6 +83,134 @@ export default function CartPage() {
     setTimeSlot,
     getTotalPrice,
   } = useCartStore();
+
+  // cartStore에서 저장된 시간대를 초기값으로 사용
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(
+    cartTimeSlot?.id || null
+  );
+
+  // 페이지 진입 시 용기 잔액 조회 (customer만)
+  useEffect(() => {
+    if (role === "customer") {
+      getContainerBalance()
+        .then((response) => {
+          if (response.success) {
+            setContainerBalance(response.balance);
+          }
+        })
+        .catch((err) => {
+          console.error("용기 잔액 조회 오류:", err);
+        });
+    }
+  }, [role]);
+
+  // 페이지 진입 시 저장된 시간대 만료 체크 및 날짜 offset 동기화
+  useEffect(() => {
+    if (cartTimeSlot && isTimeSlotExpired(cartTimeSlot)) {
+      alert(TIME_SLOT_EXPIRED_MESSAGE);
+      setSelectedTimeSlotId(null);
+      setTimeSlot(null);
+    } else if (cartTimeSlot && orderDate) {
+      // 저장된 orderDate와 현재 날짜를 비교해서 offset 설정
+      const todayStr = getDateString(getKoreaDate(0));
+      const tomorrowStr = getDateString(getKoreaDate(1));
+
+      if (orderDate === todayStr) {
+        setSelectedDateOffset(0);
+      } else if (orderDate === tomorrowStr) {
+        setSelectedDateOffset(1);
+      }
+      setSelectedTimeSlotId(cartTimeSlot.id);
+    }
+    setIsInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 최초 마운트 시에만 실행
+
+  // 날짜 변경 시 openHours 다시 불러오기
+  useEffect(() => {
+    async function fetchOpenHoursForDate() {
+      try {
+        // 선택한 날짜가 일요일인지 체크
+        const dateToCheck = getKoreaDate(selectedDateOffset);
+        if (isSundayDate(dateToCheck)) {
+          const sundaySlots = defaultTimeSlots.map((slot) => ({
+            ...slot,
+            isEnabled: false,
+            comment: "휴무일입니다.",
+            reservation: 0,
+          }));
+          setTimeSlots(sundaySlots);
+          // 초기화 이후에만 시간대 선택 초기화
+          if (isInitialized) {
+            setSelectedTimeSlotId(null);
+            setTimeSlot(null);
+          }
+          return;
+        }
+
+        const serverSlots = await getOpenHours(currentDateType);
+        const updatedSlots = applyOpenHoursToSlots(defaultTimeSlots, serverSlots);
+        setTimeSlots(updatedSlots);
+
+        // 초기화 이후 사용자가 날짜를 변경한 경우에만 시간대 선택 초기화
+        // (저장된 시간대가 있고 해당 날짜와 일치하면 유지)
+        if (isInitialized && orderDate !== selectedDateStr) {
+          setSelectedTimeSlotId(null);
+          setTimeSlot(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch open hours:", error);
+      }
+    }
+
+    fetchOpenHoursForDate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDateType, selectedDateOffset, isInitialized]);
+
+  // 시간대 선택 핸들러 (장바구니에도 저장, 날짜 포함)
+  const handleSelectTimeSlot = (slotId: string | null) => {
+    if (slotId) {
+      const slot = timeSlots.find((s) => s.id === slotId);
+      if (slot && isTimeSlotExpired(slot)) {
+        alert(TIME_SLOT_EXPIRED_MESSAGE);
+        setSelectedTimeSlotId(null);
+        setTimeSlot(null);
+        return;
+      }
+      setSelectedTimeSlotId(slotId);
+      // 선택한 날짜와 함께 시간대 저장
+      setTimeSlot(slot || null, selectedDateStr);
+    } else {
+      setSelectedTimeSlotId(null);
+      setTimeSlot(null);
+    }
+  };
+
+  // 시간대 업데이트 핸들러 (Staff 전용)
+  const handleUpdateTimeSlots = async (updatedSlots: typeof timeSlots) => {
+    setIsSavingOpenHours(true);
+    try {
+      await saveOpenHours(updatedSlots, currentDateType);
+      setTimeSlots(updatedSlots);
+      alert(`${selectedDateOffset === 0 ? "오늘" : "익일"} 배송 시간대가 저장되었습니다.`);
+    } catch (error) {
+      console.error("Failed to save open hours:", error);
+      alert("배송 시간대 저장에 실패했습니다.");
+    } finally {
+      setIsSavingOpenHours(false);
+    }
+  };
+
+  // 시간대 선택 해제 핸들러
+  const handleClearTimeSlot = () => {
+    setSelectedTimeSlotId(null);
+    setTimeSlot(null);
+  };
+
+  // 현재 선택된 시간대 정보
+  const selectedTimeSlot = timeSlots.find(
+    (slot) => slot.id === selectedTimeSlotId
+  );
 
   // 주문하기 버튼 클릭 핸들러
   const handleOrder = async () => {
@@ -89,8 +277,8 @@ export default function CartPage() {
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
   };
 
-  // 요일 가져오기
-  const getDayOfWeek = (dateStr: string | null) => {
+  // 요일 가져오기 (문자열 날짜용)
+  const getDayOfWeekFromStr = (dateStr: string | null) => {
     const days = ["일", "월", "화", "수", "목", "금", "토"];
     const date = dateStr ? new Date(dateStr) : new Date();
     return days[date.getDay()];
@@ -102,29 +290,46 @@ export default function CartPage() {
     <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
       <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">장바구니</h1>
 
-      {/* 배송 정보 헤더 */}
-      <div className="bg-blue-50 rounded-xl p-4 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          {/* 날짜 */}
-          <div className="flex items-center gap-2">
-            <span className="text-blue-600 font-medium text-lg sm:text-base">
-              {formatDate(orderDate)} ({getDayOfWeek(orderDate)})
-            </span>
-          </div>
-          {/* 배송 시간대 */}
-          <div>
-            {selectedTimeSlot ? (
+      {/* 배송 정보 헤더 - 선택된 시간대가 있을 때만 표시 */}
+      {selectedTimeSlot && (
+        <div className="bg-blue-50 rounded-xl p-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            {/* 날짜 */}
+            <div className="flex items-center gap-2">
+              <span className="text-blue-600 font-medium text-lg sm:text-base">
+                {formatDate(orderDate)} ({getDayOfWeekFromStr(orderDate)})
+              </span>
+            </div>
+            {/* 배송 시간대 */}
+            <div className="flex items-center gap-2">
               <span className="text-base sm:text-sm text-blue-700 bg-blue-100 px-3 py-1.5 sm:py-1 rounded-full">
                 배송 희망: {selectedTimeSlot.label}
               </span>
-            ) : (
-              <span className="text-base sm:text-sm text-gray-500">
-                배송 시간대를 선택해주세요
-              </span>
-            )}
+              <button
+                onClick={handleClearTimeSlot}
+                className="text-xs text-gray-400 hover:text-gray-600"
+              >
+                변경
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 배송 날짜 & 시간대 선택 */}
+      <TimeSlotSelector
+        timeSlots={timeSlots}
+        selectedSlotId={selectedTimeSlotId}
+        isStaff={isStaff}
+        isSaving={isSavingOpenHours}
+        onSelectSlot={handleSelectTimeSlot}
+        onUpdateSlots={handleUpdateTimeSlots}
+        selectedDate={selectedDate}
+        selectedDateOffset={selectedDateOffset}
+        onDateOffsetChange={setSelectedDateOffset}
+        formatDate={formatKoreaDate}
+        getDayOfWeek={getDayOfWeek}
+      />
 
       {/* 장바구니 내용 */}
       {items.length === 0 ? (
@@ -199,6 +404,16 @@ export default function CartPage() {
                 </span>
               </li>
             </ol>
+
+            {/* 용기 보관 현황 (customer만 표시) */}
+            {!isStaff && containerBalance !== null && (
+              <div className="mt-3 pt-3 border-t border-amber-200">
+                <p className="text-base sm:text-sm text-amber-700">
+                  현재 지환수가 보관 중인 나의 용기:{" "}
+                  <span className="font-bold text-amber-900">{containerBalance}개</span>
+                </p>
+              </div>
+            )}
 
             {/* 다회용기 입력 영역 */}
             <div className="mt-4 pt-4 border-t border-amber-200">

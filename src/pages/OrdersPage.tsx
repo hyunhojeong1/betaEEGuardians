@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { getOrders, cancelOrder } from "@/services/order";
-import { getContainerBalance, getAllContainerBalances, type CustomerContainerBalance } from "@/services/container";
+import { getAllContainerBalances, type CustomerContainerBalance } from "@/services/container";
 import { createReview, getReviews } from "@/services/review";
 import type { OrderItem } from "@/types/order";
 import type { Review } from "@/types/review";
@@ -23,7 +23,6 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingKey, setCancellingKey] = useState<string | null>(null);
-  const [containerBalance, setContainerBalance] = useState<number | null>(null);
   const [allContainerBalances, setAllContainerBalances] = useState<CustomerContainerBalance[]>([]);
   // 리뷰 관련 상태
   const [reviewingKey, setReviewingKey] = useState<string | null>(null);
@@ -48,18 +47,6 @@ export default function OrdersPage() {
         const response = await getOrders();
         setOrders(response.orders);
         setUserRole(response.userRole);
-
-        // customer인 경우 본인 용기 잔액 조회
-        if (response.userRole === "customer") {
-          try {
-            const balanceResponse = await getContainerBalance();
-            if (balanceResponse.success) {
-              setContainerBalance(balanceResponse.balance);
-            }
-          } catch (balanceErr) {
-            console.error("용기 잔액 조회 오류:", balanceErr);
-          }
-        }
 
         // staff인 경우 전체 고객 용기 잔액 조회
         if (response.userRole === "staff") {
@@ -299,11 +286,6 @@ export default function OrdersPage() {
         {userRole === "staff" && (
           <span className="text-base sm:text-sm bg-yellow-100 text-yellow-700 px-3 py-1.5 sm:py-1 rounded-full">
             Staff 모드 (전체 주문)
-          </span>
-        )}
-        {userRole === "customer" && containerBalance !== null && (
-          <span className="text-base sm:text-sm bg-green-50 text-green-700 px-3 py-1.5 sm:py-1 rounded-full border border-green-200">
-            지환수가 보관중인 나의 용기: {containerBalance}개
           </span>
         )}
       </div>
