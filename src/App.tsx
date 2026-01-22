@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
-import { HomePage, ShopPage, CartPage, OrdersPage, StaffTodoPage } from "./pages";
+import {
+  HomePage,
+  ShopPage,
+  CartPage,
+  OrdersPage,
+  StaffTodoPage,
+} from "./pages";
 import VerificationGate from "./components/VerificationGate";
 import { useUserStore } from "./stores/userStore";
 import { useVerificationStore } from "./stores/verificationStore";
 import { useCartStore } from "./stores/cartStore";
+import logo from "@/assets/logo.png";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -27,7 +34,7 @@ function App() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="text-xl font-bold text-blue-600">
-              지환수
+              <img src={logo} alt="logo" className="w-32" />
             </Link>
 
             {/* Desktop Menu */}
@@ -38,7 +45,10 @@ function App() {
               <Link to="/shop" className="text-gray-600 hover:text-blue-600">
                 장보기
               </Link>
-              <Link to="/cart" className="text-gray-600 hover:text-blue-600 relative">
+              <Link
+                to="/cart"
+                className="text-gray-600 hover:text-blue-600 relative"
+              >
                 장바구니
                 {cartItemCount > 0 && (
                   <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -50,7 +60,10 @@ function App() {
                 주문내역
               </Link>
               {role === "staff" && (
-                <Link to="/staff-todo" className="text-purple-600 hover:text-purple-700 font-medium">
+                <Link
+                  to="/staff-todo"
+                  className="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   직원To-do
                 </Link>
               )}
@@ -193,4 +206,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
