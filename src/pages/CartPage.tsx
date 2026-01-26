@@ -31,7 +31,10 @@ function formatKoreaDate(date: Date): string {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
+  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(
+    2,
+    "0"
+  )}`;
 }
 
 function getDateString(date: Date): string {
@@ -71,7 +74,8 @@ export default function CartPage() {
 
   const selectedDate = getKoreaDate(selectedDateOffset);
   const selectedDateStr = getDateString(selectedDate);
-  const currentDateType: DateType = selectedDateOffset === 0 ? "today" : "tomorrow";
+  const currentDateType: DateType =
+    selectedDateOffset === 0 ? "today" : "tomorrow";
 
   const {
     items,
@@ -149,7 +153,10 @@ export default function CartPage() {
         }
 
         const serverSlots = await getOpenHours(currentDateType);
-        const updatedSlots = applyOpenHoursToSlots(defaultTimeSlots, serverSlots);
+        const updatedSlots = applyOpenHoursToSlots(
+          defaultTimeSlots,
+          serverSlots
+        );
         setTimeSlots(updatedSlots);
 
         // 초기화 이후 사용자가 날짜를 변경한 경우에만 시간대 선택 초기화
@@ -192,7 +199,11 @@ export default function CartPage() {
     try {
       await saveOpenHours(updatedSlots, currentDateType);
       setTimeSlots(updatedSlots);
-      alert(`${selectedDateOffset === 0 ? "오늘" : "익일"} 배송 시간대가 저장되었습니다.`);
+      alert(
+        `${
+          selectedDateOffset === 0 ? "오늘" : "익일"
+        } 배송 시간대가 저장되었습니다.`
+      );
     } catch (error) {
       console.error("Failed to save open hours:", error);
       alert("배송 시간대 저장에 실패했습니다.");
@@ -261,7 +272,10 @@ export default function CartPage() {
     } catch (error: unknown) {
       console.error("주문 오류:", error);
       const firebaseError = error as { code?: string; message?: string };
-      alert(firebaseError.message || "주문 중 오류가 발생했습니다. 다시 시도해주세요.");
+      alert(
+        firebaseError.message ||
+          "주문 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
     } finally {
       setIsOrdering(false);
     }
@@ -271,10 +285,14 @@ export default function CartPage() {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) {
       const today = new Date();
-      return `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+      return `${today.getFullYear()}년 ${
+        today.getMonth() + 1
+      }월 ${today.getDate()}일`;
     }
     const date = new Date(dateStr);
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    return `${date.getFullYear()}년 ${
+      date.getMonth() + 1
+    }월 ${date.getDate()}일`;
   };
 
   // 요일 가져오기 (문자열 날짜용)
@@ -288,7 +306,9 @@ export default function CartPage() {
 
   return (
     <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
-      <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">장바구니</h1>
+      <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">
+        장바구니
+      </h1>
 
       {/* 배송 정보 헤더 - 선택된 시간대가 있을 때만 표시 */}
       {selectedTimeSlot && (
@@ -334,7 +354,9 @@ export default function CartPage() {
       {/* 장바구니 내용 */}
       {items.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 mb-4 text-base sm:text-sm">장바구니가 비어있습니다.</p>
+          <p className="text-gray-500 mb-4 text-base sm:text-sm">
+            장바구니가 비어있습니다.
+          </p>
           <a
             href="/shop"
             className="text-blue-600 hover:text-blue-700 underline text-base sm:text-sm"
@@ -369,7 +391,9 @@ export default function CartPage() {
           {/* 합계 */}
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between">
-              <span className="text-xl sm:text-lg font-medium text-gray-700">합계</span>
+              <span className="text-xl sm:text-lg font-medium text-gray-700">
+                합계
+              </span>
               <span className="text-2xl sm:text-2xl font-bold text-blue-600">
                 {totalPrice.toLocaleString()}원
               </span>
@@ -410,7 +434,9 @@ export default function CartPage() {
               <div className="mt-3 pt-3 border-t border-amber-200">
                 <p className="text-base sm:text-sm text-amber-700">
                   현재 지환수가 보관 중인 나의 용기:{" "}
-                  <span className="font-bold text-amber-900">{containerBalance}개</span>
+                  <span className="font-bold text-amber-900">
+                    {containerBalance}개
+                  </span>
                 </p>
               </div>
             )}
@@ -421,7 +447,7 @@ export default function CartPage() {
                 {/* 용기 수량 입력 */}
                 <div className="flex items-center gap-2">
                   <span className="text-base sm:text-sm text-amber-700 font-medium">
-                    개인 용기 갯수:
+                    추가할 개인 용기 갯수:
                   </span>
                   <input
                     type="number"
@@ -442,7 +468,9 @@ export default function CartPage() {
                     placeholder="0"
                     className="w-16 px-2 py-2 sm:py-1.5 text-center text-base sm:text-sm border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
                   />
-                  <span className="text-base sm:text-sm text-amber-700">개</span>
+                  <span className="text-base sm:text-sm text-amber-700">
+                    개
+                  </span>
                 </div>
 
                 {/* 세척 필요 여부 체크박스 */}
@@ -487,8 +515,8 @@ export default function CartPage() {
             {isOrdering
               ? "주문 처리 중..."
               : selectedTimeSlot
-                ? "주문하기"
-                : "배송 시간대를 선택해주세요"}
+              ? "주문하기"
+              : "배송 시간대를 선택해주세요"}
           </button>
         </>
       )}

@@ -11,7 +11,7 @@ import VerificationGate from "./components/VerificationGate";
 import { useUserStore } from "./stores/userStore";
 import { useVerificationStore } from "./stores/verificationStore";
 import { useCartStore } from "./stores/cartStore";
-import logo from "@/assets/logo.png";
+import logo1 from "@/assets/logo1.png";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,7 +34,7 @@ function App() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="text-xl font-bold text-blue-600">
-              <img src={logo} alt="logo" className="w-32" />
+              <img src={logo1} alt="logo" className="w-48" />
             </Link>
 
             {/* Desktop Menu */}
@@ -202,6 +202,22 @@ function App() {
           </Routes>
         </VerificationGate>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-300 mt-16">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-lg font-semibold text-white mb-2">
+              지구환경수호단
+            </p>
+            <p className="text-sm mb-4">다회용기 포장 신선식품 당일배송</p>
+            <div className="text-xs text-gray-400 space-y-1">
+              <p>문의: jhhdy1@gmail.com</p>
+              <p>&copy; 2026 지환수. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
