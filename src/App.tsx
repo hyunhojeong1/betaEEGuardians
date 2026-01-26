@@ -210,7 +210,6 @@ function App() {
             <p className="text-lg font-semibold text-white mb-2">
               지구환경수호단
             </p>
-            <p className="text-sm mb-4">다회용기 포장 신선식품 당일배송</p>
             <div className="text-xs text-gray-400 space-y-1">
               <p>문의: jhhdy1@gmail.com</p>
               <p>&copy; 2026 지환수. All rights reserved.</p>

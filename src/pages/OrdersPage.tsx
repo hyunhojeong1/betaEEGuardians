@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { getOrders, cancelOrder } from "@/services/order";
-import { getAllContainerBalances, type CustomerContainerBalance } from "@/services/container";
+import {
+  getAllContainerBalances,
+  type CustomerContainerBalance,
+} from "@/services/container";
 import { createReview, getReviews } from "@/services/review";
 import type { OrderItem } from "@/types/order";
 import type { Review } from "@/types/review";
@@ -23,13 +26,17 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingKey, setCancellingKey] = useState<string | null>(null);
-  const [allContainerBalances, setAllContainerBalances] = useState<CustomerContainerBalance[]>([]);
+  const [allContainerBalances, setAllContainerBalances] = useState<
+    CustomerContainerBalance[]
+  >([]);
   // 리뷰 관련 상태
   const [reviewingKey, setReviewingKey] = useState<string | null>(null);
   const [reviewRating, setReviewRating] = useState<number>(5);
   const [reviewContent, setReviewContent] = useState<string>("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(
+    new Set()
+  );
   const [reviews, setReviews] = useState<Review[]>([]);
   // deliverySlotKey -> Review 매핑
   const reviewBySlotKey = useMemo(() => {
@@ -66,7 +73,9 @@ export default function OrdersPage() {
           if (reviewsResponse.success) {
             setReviews(reviewsResponse.reviews);
             // 이미 작성한 리뷰의 deliverySlotKey를 submittedReviews에 추가
-            const submittedKeys = new Set(reviewsResponse.reviews.map((r) => r.deliverySlotKey));
+            const submittedKeys = new Set(
+              reviewsResponse.reviews.map((r) => r.deliverySlotKey)
+            );
             setSubmittedReviews(submittedKeys);
           }
         } catch (reviewErr) {
@@ -246,7 +255,10 @@ export default function OrdersPage() {
       }
     } catch (err: unknown) {
       console.error("리뷰 저장 오류:", err);
-      const errorMessage = err instanceof Error ? err.message : "리뷰 저장 중 오류가 발생했습니다.";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "리뷰 저장 중 오류가 발생했습니다.";
       if (errorMessage.includes("already-exists")) {
         alert("이미 해당 주문에 대한 리뷰를 작성하셨습니다.");
         setSubmittedReviews((prev) => new Set(prev).add(group.deliverySlotKey));
@@ -262,7 +274,9 @@ export default function OrdersPage() {
   if (isLoading) {
     return (
       <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
-        <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">주문 내역</h1>
+        <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">
+          주문 내역
+        </h1>
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
@@ -273,8 +287,12 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
-        <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">주문 내역</h1>
-        <p className="text-red-500 text-center py-10 text-base sm:text-sm">{error}</p>
+        <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">
+          주문 내역
+        </h1>
+        <p className="text-red-500 text-center py-10 text-base sm:text-sm">
+          {error}
+        </p>
       </div>
     );
   }
@@ -282,7 +300,9 @@ export default function OrdersPage() {
   return (
     <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold">주문 내역</h1>
+        <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold">
+          주문 내역
+        </h1>
         {userRole === "staff" && (
           <span className="text-base sm:text-sm bg-yellow-100 text-yellow-700 px-3 py-1.5 sm:py-1 rounded-full">
             Staff 모드 (전체 주문)
@@ -290,18 +310,20 @@ export default function OrdersPage() {
         )}
       </div>
 
-      {/* 입금 안내 배너 */}
+      {/* 계좌이체 안내 배너 */}
       {userRole === "customer" && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
           <p className="text-base sm:text-sm text-yellow-800 font-medium mb-2">
-            💰 입금 안내
+            💰 계좌이체 안내
           </p>
           <p className="text-base sm:text-sm text-yellow-700">
             농협 302-0340-8696-31 (예금주: 이지현)
           </p>
-          <p className="text-sm sm:text-xs text-yellow-600 mt-1">
-            주문 후 위 계좌로 입금해 주세요. 입금자명은 주문자 코드와 동일하게
-            해주세요.
+          <p className="text-sm sm:text-sm text-yellow-600 mt-1">
+            위 계좌로 구매 총액을 이체해 주셔야 최종 주문 완료가 됩니다. 이체가
+            확인되면 확인 메세지를 드리겠습니다.
+            <br />
+            (이체하지 않으시면 주문이 자동 취소됩니다)
           </p>
         </div>
       )}
@@ -321,16 +343,30 @@ export default function OrdersPage() {
                 <span className="text-base sm:text-sm text-gray-700 font-medium">
                   {item.ordererCode} 님의 용기 수
                 </span>
-                <span className={`text-base sm:text-sm font-bold ${item.balance > 0 ? 'text-green-600' : item.balance < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                <span
+                  className={`text-base sm:text-sm font-bold ${
+                    item.balance > 0
+                      ? "text-green-600"
+                      : item.balance < 0
+                      ? "text-red-600"
+                      : "text-gray-500"
+                  }`}
+                >
                   {item.balance}개
                 </span>
               </div>
             ))}
           </div>
           <div className="mt-3 pt-3 border-t border-purple-200 flex justify-between">
-            <span className="text-base sm:text-sm text-purple-700 font-medium">전체 보관 용기</span>
+            <span className="text-base sm:text-sm text-purple-700 font-medium">
+              전체 보관 용기
+            </span>
             <span className="text-base sm:text-sm text-purple-800 font-bold">
-              {allContainerBalances.reduce((sum, item) => sum + item.balance, 0)}개
+              {allContainerBalances.reduce(
+                (sum, item) => sum + item.balance,
+                0
+              )}
+              개
             </span>
           </div>
         </div>
@@ -338,7 +374,9 @@ export default function OrdersPage() {
 
       {orderGroups.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 mb-4 text-base sm:text-sm">주문 내역이 없습니다.</p>
+          <p className="text-gray-500 mb-4 text-base sm:text-sm">
+            주문 내역이 없습니다.
+          </p>
           <a
             href="/shop"
             className="text-blue-600 hover:text-blue-700 underline text-base sm:text-sm"
@@ -373,24 +411,32 @@ export default function OrdersPage() {
                       </button>
                     )}
                     {/* 리뷰 작성 버튼 (customer & 과거 주문만) */}
-                    {userRole === "customer" && !isFutureOrder(group) && !submittedReviews.has(group.deliverySlotKey) && (
-                      <button
-                        onClick={() => handleToggleReview(group.deliverySlotKey)}
-                        className={`text-sm sm:text-xs px-2.5 sm:px-2 py-1 sm:py-0.5 rounded ${
-                          reviewingKey === group.deliverySlotKey
-                            ? "bg-green-600 text-white"
-                            : "text-green-600 hover:text-green-700 border border-green-400 hover:border-green-500"
-                        }`}
-                      >
-                        {reviewingKey === group.deliverySlotKey ? "접기" : "식품&배송 평가하기"}
-                      </button>
-                    )}
+                    {userRole === "customer" &&
+                      !isFutureOrder(group) &&
+                      !submittedReviews.has(group.deliverySlotKey) && (
+                        <button
+                          onClick={() =>
+                            handleToggleReview(group.deliverySlotKey)
+                          }
+                          className={`text-sm sm:text-xs px-2.5 sm:px-2 py-1 sm:py-0.5 rounded ${
+                            reviewingKey === group.deliverySlotKey
+                              ? "bg-green-600 text-white"
+                              : "text-green-600 hover:text-green-700 border border-green-400 hover:border-green-500"
+                          }`}
+                        >
+                          {reviewingKey === group.deliverySlotKey
+                            ? "접기"
+                            : "식품&배송 평가하기"}
+                        </button>
+                      )}
                     {/* 리뷰 완료 표시 */}
-                    {userRole === "customer" && !isFutureOrder(group) && submittedReviews.has(group.deliverySlotKey) && (
-                      <span className="text-sm sm:text-xs text-gray-400 px-2 py-0.5">
-                        평가 완료
-                      </span>
-                    )}
+                    {userRole === "customer" &&
+                      !isFutureOrder(group) &&
+                      submittedReviews.has(group.deliverySlotKey) && (
+                        <span className="text-sm sm:text-xs text-gray-400 px-2 py-0.5">
+                          평가 완료
+                        </span>
+                      )}
                   </div>
                   <p className="text-base sm:text-sm text-blue-600">
                     배송 희망: {group.timeSlotLabel}
@@ -420,7 +466,9 @@ export default function OrdersPage() {
 
                   {/* 별점 선택 */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-base sm:text-sm text-gray-600">별점:</span>
+                    <span className="text-base sm:text-sm text-gray-600">
+                      별점:
+                    </span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -471,7 +519,12 @@ export default function OrdersPage() {
                     <p className="text-base sm:text-sm font-medium text-blue-800">
                       {userRole === "staff" && (
                         <span className="text-purple-600 mr-2">
-                          [{reviewBySlotKey.get(group.deliverySlotKey)!.ordererCode}]
+                          [
+                          {
+                            reviewBySlotKey.get(group.deliverySlotKey)!
+                              .ordererCode
+                          }
+                          ]
                         </span>
                       )}
                       평가 내용
@@ -481,7 +534,8 @@ export default function OrdersPage() {
                         <span
                           key={star}
                           className={`text-xl sm:text-lg ${
-                            star <= reviewBySlotKey.get(group.deliverySlotKey)!.rating
+                            star <=
+                            reviewBySlotKey.get(group.deliverySlotKey)!.rating
                               ? "text-yellow-400"
                               : "text-gray-300"
                           }`}

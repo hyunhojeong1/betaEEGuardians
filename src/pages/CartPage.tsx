@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { useUserStore } from "@/stores/userStore";
 import CartItemCard from "@/components/cart/CartItemCard";
+import cartHowToUse1 from "@/assets/cart_how_to_use_1.png";
 import TimeSlotSelector, {
   generateDefaultTimeSlots,
 } from "@/components/shop/TimeSlotSelector";
@@ -403,28 +404,38 @@ export default function CartPage() {
           {/* 주문 전 유의사항 안내 */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
             <p className="text-base sm:text-sm font-semibold text-amber-800 mb-3">
-              주문 전 아래 유의사항을 꼭 확인해주세요
+              주문 전 유의사항
             </p>
             <ol className="space-y-2 text-base sm:text-sm text-amber-700">
               <li className="flex gap-2">
                 <span className="font-medium">1.</span>
                 <span>
-                  회수할 지환수 상자가 있다면 배송 전까지 현관문 앞에
+                  회수할 지환수 상자가 있는 경우, 배송 전까지 현관문 앞에
                   내놓아주세요.
+                  <br />
+                  (첫 주문이신 분께는 해당되지 않습니다. '이용 안내' 설명을
+                  참조해 주세요.)
                 </span>
               </li>
-              <li className="flex gap-2">
-                <span className="font-medium">2.</span>
-                <span>
-                  아 맞다, 음식물 쓰레기! 잔반 회수 용기와 싱크대 배수망에 남은
-                  음식물 배출도 잊지 마세요.
-                </span>
+              <li className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <span className="font-medium">2.</span>
+                  <span>
+                    아 맞다, 음식물 쓰레기! - 잔반 회수 용기도 잊지 마시고 함께
+                    배출해 주세요.
+                  </span>
+                </div>
+                <img
+                  src={cartHowToUse1}
+                  alt="음식물 쓰레기 배출 안내"
+                  className="w-full max-w-[540px] rounded-lg"
+                />
               </li>
               <li className="flex gap-2">
                 <span className="font-medium">3.</span>
                 <span>
-                  개인 다회용기도 내놓으신다면: 용기 수량과 세척 필요 여부를
-                  알려주세요.
+                  개인 다회용기도 추가로 내놓으신다면 - 용기 개수와 세척 필요
+                  여부를 알려주세요.
                 </span>
               </li>
             </ol>
@@ -447,7 +458,7 @@ export default function CartPage() {
                 {/* 용기 수량 입력 */}
                 <div className="flex items-center gap-2">
                   <span className="text-base sm:text-sm text-amber-700 font-medium">
-                    추가할 개인 용기 갯수:
+                    추가하실 개인 용기 개수:
                   </span>
                   <input
                     type="number"
