@@ -88,7 +88,7 @@ export default function HomePage() {
     <div className="px-0 py-2 md:px-8 md:py-10">
       {/* 슬로건 구역 - 배경 이미지 + 반투명 오버레이 */}
       <section
-        className="mb-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden"
+        className="mb-12 md:mb-20 py-10 px-6 text-center relative overflow-hidden"
         style={{
           backgroundImage: `url(${forestBg})`,
           backgroundSize: "cover",
@@ -96,7 +96,7 @@ export default function HomePage() {
         }}
       >
         {/* 검은색 반투명 오버레이 */}
-        <div className="absolute inset-0 bg-black/60 rounded-2xl"></div>
+        <div className="absolute inset-0 bg-black/60"></div>
 
         {/* 텍스트 콘텐츠 (오버레이 위) */}
         <div className="relative z-10">
@@ -114,7 +114,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mb-8">
+      <section className="mb-12 md:mb-20">
         {/* 4개 이미지: 모바일 세로 1열 / PC 가로 4열 */}
         <div className="grid grid-cols-1 md:grid-cols-4 md:gap-3 w-full mb-6">
           {featureCards.map((card, index) => (
@@ -138,7 +138,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-      <section className="bg-gray-100">
+      <section className="mt-8 md:mt-16 bg-gray-100">
         {/* PC용 이미지 (md 이상에서만 표시) */}
         <div className="hidden md:flex flex-col items-center">
           {/* how_to_use_1 with clickable overlay button */}
