@@ -142,7 +142,7 @@ export default function HomePage() {
         {/* PC용 이미지 (md 이상에서만 표시) */}
         <div className="hidden md:flex flex-col items-center">
           {/* how_to_use_1 with clickable overlay button */}
-          <div className="relative max-w-[1080px] w-full">
+          <div className="relative max-w-[810px] w-full">
             <img src={howToUse1} alt="이용방법 1" className="w-full" />
             {/* 호출하기 버튼 오버레이 - 이미지 내 버튼 위치에 맞게 조정 필요 */}
             <button
