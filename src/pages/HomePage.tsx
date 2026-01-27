@@ -6,11 +6,17 @@ import gemini2 from "@/assets/Gemini_Generated_Image_2.png";
 import gemini3 from "@/assets/Gemini_Generated_Image_3.png";
 import gemini4 from "@/assets/Gemini_Generated_Image_4.jpg";
 import gemini5 from "@/assets/Sprout_Image_1920.png";
+// PC용 이미지
 import howToUse1 from "@/assets/how_to_use_1.png";
 import howToUse2 from "@/assets/how_to_use_2.png";
 import howToUse3 from "@/assets/how_to_use_3.png";
 import howToUse4 from "@/assets/how_to_use_4.png";
-import oldHowToUse2 from "@/assets/old_how_to_use_2.png";
+// 모바일용 이미지
+import mobileHowToUse1 from "@/assets/mobile_how_to_use_1.png";
+import mobileHowToUse2 from "@/assets/mobile_how_to_use_2.png";
+import mobileHowToUse3 from "@/assets/mobile_how_to_use_3.png";
+import mobileHowToUse4 from "@/assets/mobile_how_to_use_4.png";
+import mobileHowToUse5 from "@/assets/mobile_how_to_use_5.png";
 
 // 이미지 카드 데이터
 const featureCards = [
@@ -79,7 +85,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="px-4 py-6 md:px-8 md:py-10">
+    <div className="px-0 py-2 md:px-8 md:py-10">
       {/* 슬로건 구역 - 배경 이미지 + 반투명 오버레이 */}
       <section
         className="mb-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden"
@@ -133,13 +139,9 @@ export default function HomePage() {
         </div>
       </section>
       <section className="bg-gray-100">
-        <div className="flex flex-col items-center">
+        {/* PC용 이미지 (md 이상에서만 표시) */}
+        <div className="hidden md:flex flex-col items-center">
           {/* how_to_use_1 with clickable overlay button */}
-          <img
-            src={oldHowToUse2}
-            alt="이용방법 old2"
-            className="max-w-[810px] w-full"
-          />
           <div className="relative max-w-[1080px] w-full">
             <img src={howToUse1} alt="이용방법 1" className="w-full" />
             {/* 호출하기 버튼 오버레이 - 이미지 내 버튼 위치에 맞게 조정 필요 */}
@@ -171,6 +173,31 @@ export default function HomePage() {
             alt="이용방법 4"
             className="max-w-[810px] w-full"
           />
+        </div>
+
+        {/* 모바일용 이미지 (md 미만에서만 표시) */}
+        <div className="flex md:hidden flex-col items-center">
+          {/* mobile_how_to_use_1 with clickable overlay button */}
+          <div className="relative w-full">
+            <img src={mobileHowToUse1} alt="이용방법 1" className="w-full" />
+            {/* 호출하기 버튼 오버레이 */}
+            <button
+              onClick={scrollToCallSection}
+              className="absolute cursor-pointer hover:bg-white/20 transition-colors"
+              style={{
+                bottom: "31%",
+                left: "25%",
+                transform: "translateX(-10%)",
+                width: "60%",
+                height: "6%",
+              }}
+              aria-label="호출하기 섹션으로 이동"
+            />
+          </div>
+          <img src={mobileHowToUse2} alt="이용방법 2" className="w-full" />
+          <img src={mobileHowToUse3} alt="이용방법 3" className="w-full" />
+          <img src={mobileHowToUse4} alt="이용방법 4" className="w-full" />
+          <img src={mobileHowToUse5} alt="이용방법 5" className="w-full" />
         </div>
       </section>
 
