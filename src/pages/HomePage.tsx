@@ -10,6 +10,7 @@ import howToUse1 from "@/assets/how_to_use_1.png";
 import howToUse2 from "@/assets/how_to_use_2.png";
 import howToUse3 from "@/assets/how_to_use_3.png";
 import howToUse4 from "@/assets/how_to_use_4.png";
+import oldHowToUse2 from "@/assets/old_how_to_use_2.png";
 
 // 이미지 카드 데이터
 const featureCards = [
@@ -134,7 +135,12 @@ export default function HomePage() {
       <section className="bg-gray-100">
         <div className="flex flex-col items-center">
           {/* how_to_use_1 with clickable overlay button */}
-          <div className="relative max-w-[810px] w-full">
+          <img
+            src={oldHowToUse2}
+            alt="이용방법 old2"
+            className="max-w-[810px] w-full"
+          />
+          <div className="relative max-w-[1080px] w-full">
             <img src={howToUse1} alt="이용방법 1" className="w-full" />
             {/* 호출하기 버튼 오버레이 - 이미지 내 버튼 위치에 맞게 조정 필요 */}
             <button
