@@ -72,6 +72,7 @@ export default function CartPage() {
   const [selectedDateOffset, setSelectedDateOffset] = useState(0);
   const [isSavingOpenHours, setIsSavingOpenHours] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(true); // 시간대 로딩 상태
 
   const selectedDate = getKoreaDate(selectedDateOffset);
   const selectedDateStr = getDateString(selectedDate);
@@ -134,6 +135,7 @@ export default function CartPage() {
   // 날짜 변경 시 openHours 다시 불러오기
   useEffect(() => {
     async function fetchOpenHoursForDate() {
+      setIsLoadingSlots(true);
       try {
         // 선택한 날짜가 일요일인지 체크
         const dateToCheck = getKoreaDate(selectedDateOffset);
@@ -168,6 +170,8 @@ export default function CartPage() {
         }
       } catch (error) {
         console.error("Failed to fetch open hours:", error);
+      } finally {
+        setIsLoadingSlots(false);
       }
     }
 
@@ -254,14 +258,11 @@ export default function CartPage() {
         items: orderItems,
         deliveryDate: orderDate || todayKorea,
         deliveryTimeSlot: selectedTimeSlot,
-        // 다회용기 정보 (수량이 0보다 클 때만 전송)
-        containerInfo:
-          containerCount > 0
-            ? {
-                containerCount,
-                needsWashing,
-              }
-            : undefined,
+        // 다회용기 정보 (항상 전송 - 반출만 있는 케이스를 위해)
+        containerInfo: {
+          containerCount,
+          needsWashing,
+        },
       });
 
       if (response.success) {
@@ -338,19 +339,28 @@ export default function CartPage() {
       )}
 
       {/* 배송 날짜 & 시간대 선택 */}
-      <TimeSlotSelector
-        timeSlots={timeSlots}
-        selectedSlotId={selectedTimeSlotId}
-        isStaff={isStaff}
-        isSaving={isSavingOpenHours}
-        onSelectSlot={handleSelectTimeSlot}
-        onUpdateSlots={handleUpdateTimeSlots}
-        selectedDate={selectedDate}
-        selectedDateOffset={selectedDateOffset}
-        onDateOffsetChange={setSelectedDateOffset}
-        formatDate={formatKoreaDate}
-        getDayOfWeek={getDayOfWeek}
-      />
+      {isLoadingSlots ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-gray-500">배송 시간대 불러오는 중...</span>
+          </div>
+        </div>
+      ) : (
+        <TimeSlotSelector
+          timeSlots={timeSlots}
+          selectedSlotId={selectedTimeSlotId}
+          isStaff={isStaff}
+          isSaving={isSavingOpenHours}
+          onSelectSlot={handleSelectTimeSlot}
+          onUpdateSlots={handleUpdateTimeSlots}
+          selectedDate={selectedDate}
+          selectedDateOffset={selectedDateOffset}
+          onDateOffsetChange={setSelectedDateOffset}
+          formatDate={formatKoreaDate}
+          getDayOfWeek={getDayOfWeek}
+        />
+      )}
 
       {/* 장바구니 내용 */}
       {items.length === 0 ? (
