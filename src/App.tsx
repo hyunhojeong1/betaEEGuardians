@@ -9,24 +9,15 @@ import {
 } from "./pages";
 import VerificationGate from "./components/VerificationGate";
 import { useUserStore } from "./stores/userStore";
-import { useVerificationStore } from "./stores/verificationStore";
 import { useCartStore } from "./stores/cartStore";
+import { useVerificationStore } from "./stores/verificationStore";
 import logo1 from "@/assets/logo1.png";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { role, setRole } = useUserStore();
-  const { setVerified } = useVerificationStore();
+  const { role } = useUserStore();
   const cartItemCount = useCartStore((state) => state.items.length);
-
-  const toggleRole = () => {
-    setRole(role === "customer" ? "staff" : "customer");
-  };
-
-  const resetVerification = () => {
-    setVerified(false);
-    window.location.reload();
-  };
+  const { verificationCode } = useVerificationStore();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,6 +50,11 @@ function App() {
               <Link to="/orders" className="text-gray-600 hover:text-blue-600">
                 주문내역
               </Link>
+              {verificationCode && (
+                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                  {verificationCode}
+                </span>
+              )}
               {role === "staff" && (
                 <Link
                   to="/staff-todo"
@@ -67,26 +63,6 @@ function App() {
                   직원To-do
                 </Link>
               )}
-
-              {/* 개발용 토글 버튼 */}
-              <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
-                <button
-                  onClick={toggleRole}
-                  className={`px-2 py-1 text-xs rounded ${
-                    role === "staff"
-                      ? "bg-purple-100 text-purple-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {role === "staff" ? "Staff" : "Customer"}
-                </button>
-                <button
-                  onClick={resetVerification}
-                  className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200"
-                >
-                  Reset
-                </button>
-              </div>
             </div>
 
             {/* Mobile Menu Button */}
@@ -156,6 +132,11 @@ function App() {
                 >
                   주문내역
                 </Link>
+                {verificationCode && (
+                  <span className="px-2 py-1 text-xs text-gray-400 bg-gray-100 rounded">
+                    테스터: {verificationCode}
+                  </span>
+                )}
                 {role === "staff" && (
                   <Link
                     to="/staff-todo"
@@ -165,26 +146,6 @@ function App() {
                     직원To-do
                   </Link>
                 )}
-
-                {/* 개발용 토글 버튼 */}
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
-                  <button
-                    onClick={toggleRole}
-                    className={`px-2 py-1 text-xs rounded ${
-                      role === "staff"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {role === "staff" ? "Staff" : "Customer"}
-                  </button>
-                  <button
-                    onClick={resetVerification}
-                    className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200"
-                  >
-                    Reset
-                  </button>
-                </div>
               </div>
             </div>
           )}

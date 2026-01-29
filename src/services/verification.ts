@@ -6,8 +6,12 @@ interface VerifyCodeResponse {
   message: string;
 }
 
+export type UserRole = "customer" | "staff";
+
 interface CheckVerificationResponse {
   verified: boolean;
+  role?: UserRole;
+  verificationCode?: string;
 }
 
 /**
@@ -26,14 +30,14 @@ export async function verifyAndCreateUser(
 }
 
 /**
- * 사용자 인증 상태 확인 (Cloud Function 호출)
+ * 사용자 인증 상태, role, verificationCode 조회 (Cloud Function 호출)
  */
-export async function checkUserVerified(): Promise<boolean> {
+export async function checkUserInfo(): Promise<CheckVerificationResponse> {
   const checkVerification = httpsCallable<void, CheckVerificationResponse>(
     functions,
     "checkVerification"
   );
 
   const result = await checkVerification();
-  return result.data.verified;
+  return result.data;
 }

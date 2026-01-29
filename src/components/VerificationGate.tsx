@@ -1,8 +1,9 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { FirebaseError } from "firebase/app";
 import { useVerificationStore } from "@/stores/verificationStore";
+import { useUserStore } from "@/stores/userStore";
 import { useAuth } from "@/contexts/AuthContext";
-import { verifyAndCreateUser, checkUserVerified } from "@/services/verification";
+import { verifyAndCreateUser, checkUserInfo } from "@/services/verification";
 
 interface VerificationGateProps {
   children: ReactNode;
@@ -10,41 +11,38 @@ interface VerificationGateProps {
 
 export default function VerificationGate({ children }: VerificationGateProps) {
   const { user, loading: authLoading } = useAuth();
-  const { isVerified, setVerified } = useVerificationStore();
+  const { isVerified, setVerified, setVerificationCode } = useVerificationStore();
+  const { setRole } = useUserStore();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isChecking, setIsChecking] = useState(!isVerified); // 이미 인증됐으면 체크 불필요
 
-  // 페이지 로드 시 Cloud Function으로 인증 여부 확인
+  // 페이지 로드 시 Cloud Function으로 인증 여부, role, verificationCode 조회
   useEffect(() => {
-    // 이미 로컬에서 인증된 상태면 서버 확인 스킵
-    if (isVerified) {
-      setIsChecking(false);
-      return;
-    }
-
-    async function checkVerification() {
+    async function fetchUserInfo() {
       if (!user) return;
 
       try {
-        const verified = await checkUserVerified();
-        if (verified) {
+        const info = await checkUserInfo();
+        if (info.verified) {
           setVerified(true);
+          setRole(info.role || "customer");
+          setVerificationCode(info.verificationCode || null);
         }
       } catch (err) {
-        console.error("인증 확인 실패:", err);
+        console.error("사용자 정보 조회 실패:", err);
       } finally {
         setIsChecking(false);
       }
     }
 
     if (!authLoading && user) {
-      checkVerification();
+      fetchUserInfo();
     } else if (!authLoading) {
       setIsChecking(false);
     }
-  }, [user, authLoading, isVerified, setVerified]);
+  }, [user, authLoading, setVerified, setRole, setVerificationCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

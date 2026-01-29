@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 type UserRole = "customer" | "staff";
 
@@ -8,14 +7,7 @@ interface UserState {
   setRole: (role: UserRole) => void;
 }
 
-export const useUserStore = create<UserState>()(
-  persist(
-    (set) => ({
-      role: "customer",
-      setRole: (role) => set({ role }),
-    }),
-    {
-      name: "user-storage",
-    }
-  )
-);
+export const useUserStore = create<UserState>()((set) => ({
+  role: "customer",
+  setRole: (role) => set({ role }),
+}));
