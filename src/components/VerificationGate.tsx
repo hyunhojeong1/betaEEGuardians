@@ -16,7 +16,7 @@ export default function VerificationGate({ children }: VerificationGateProps) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isChecking, setIsChecking] = useState(!isVerified); // 이미 인증됐으면 체크 불필요
+  const [isChecking, setIsChecking] = useState(true); // 항상 서버 조회 수행
 
   // 페이지 로드 시 Cloud Function으로 인증 여부, role, verificationCode 조회
   useEffect(() => {
@@ -29,6 +29,9 @@ export default function VerificationGate({ children }: VerificationGateProps) {
           setVerified(true);
           setRole(info.role || "customer");
           setVerificationCode(info.verificationCode || null);
+        } else {
+          setVerified(false);
+          setVerificationCode(null);
         }
       } catch (err) {
         console.error("사용자 정보 조회 실패:", err);

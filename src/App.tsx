@@ -8,6 +8,7 @@ import {
   StaffTodoPage,
 } from "./pages";
 import VerificationGate from "./components/VerificationGate";
+import TermsModal from "./components/common/TermsModal";
 import { useUserStore } from "./stores/userStore";
 import { useCartStore } from "./stores/cartStore";
 import { useVerificationStore } from "./stores/verificationStore";
@@ -15,6 +16,7 @@ import logo1 from "@/assets/logo1.png";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const { role } = useUserStore();
   const cartItemCount = useCartStore((state) => state.items.length);
   const { verificationCode } = useVerificationStore();
@@ -168,16 +170,31 @@ function App() {
       <footer className="bg-gray-800 text-gray-300 mt-16">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center">
-            <p className="text-lg font-semibold text-white mb-2">
+            <p className="text-lg font-semibold text-white mb-3">
               지구환경수호단
             </p>
             <div className="text-xs text-gray-400 space-y-1">
-              <p>문의: jhhdy1@gmail.com</p>
-              <p>&copy; 2026 지환수. All rights reserved.</p>
+              <p>대표자: 정현호 </p>
+              <p>주소: 서울시 동작구 노량진동 140 1612호</p>
+              <p>문의전화: 010-4226-7330</p>
+              <p>이메일: jhhdy1@gmail.com</p>
+              <p>사업자등록번호: 263-13-02948</p>
+              <p className="pt-2">
+                <button
+                  onClick={() => setIsTermsOpen(true)}
+                  className="text-gray-300 hover:text-white underline"
+                >
+                  이용약관
+                </button>
+              </p>
+              <p className="pt-2">&copy; 2026 지환수. All rights reserved.</p>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* 이용약관 모달 */}
+      <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
     </div>
   );
 }

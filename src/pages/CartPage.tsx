@@ -19,6 +19,7 @@ import {
 } from "@/services/openHours";
 import { createOrder } from "@/services/order";
 import { getContainerBalance } from "@/services/container";
+import { getMembership } from "@/services/membership";
 
 // 한국 시간 기준 날짜 유틸리티
 function getKoreaDate(offset = 0): Date {
@@ -67,6 +68,9 @@ export default function CartPage() {
   // 용기 보관 현황 (customer만)
   const [containerBalance, setContainerBalance] = useState<number | null>(null);
 
+  // 멤버십 정보 (배송비)
+  const [deliveryFee, setDeliveryFee] = useState(0);
+
   // 시간대 선택 관련 state
   const [timeSlots, setTimeSlots] = useState(defaultTimeSlots);
   const [selectedDateOffset, setSelectedDateOffset] = useState(0);
@@ -95,7 +99,7 @@ export default function CartPage() {
     cartTimeSlot?.id || null
   );
 
-  // 페이지 진입 시 용기 잔액 조회 (customer만)
+  // 페이지 진입 시 용기 잔액 및 멤버십 조회 (customer만)
   useEffect(() => {
     if (role === "customer") {
       getContainerBalance()
@@ -106,6 +110,16 @@ export default function CartPage() {
         })
         .catch((err) => {
           console.error("용기 잔액 조회 오류:", err);
+        });
+
+      getMembership()
+        .then((response) => {
+          if (response.success) {
+            setDeliveryFee(response.deliveryFee);
+          }
+        })
+        .catch((err) => {
+          console.error("멤버십 조회 오류:", err);
         });
     }
   }, [role]);
@@ -400,13 +414,31 @@ export default function CartPage() {
           </div>
 
           {/* 합계 */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+          <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-2">
             <div className="flex items-center justify-between">
+              <span className="text-base sm:text-sm text-gray-600">
+                상품 가격
+              </span>
+              <span className="text-base sm:text-sm text-gray-700">
+                {totalPrice.toLocaleString()}원
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-base sm:text-sm text-gray-600">
+                배송비
+              </span>
+              <span className="text-base sm:text-sm text-gray-700">
+                {deliveryFee > 0
+                  ? `${deliveryFee.toLocaleString()}원`
+                  : "무료"}
+              </span>
+            </div>
+            <div className="border-t border-gray-200 pt-2 flex items-center justify-between">
               <span className="text-xl sm:text-lg font-medium text-gray-700">
                 합계
               </span>
               <span className="text-2xl sm:text-2xl font-bold text-blue-600">
-                {totalPrice.toLocaleString()}원
+                {(totalPrice + deliveryFee).toLocaleString()}원
               </span>
             </div>
           </div>
