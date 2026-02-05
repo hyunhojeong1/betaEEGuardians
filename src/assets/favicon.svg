@@ -1,0 +1,19 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 100 100"
+>
+  <defs>
+    <radialGradient id="faceGrad" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9be7ff" />
+      <stop offset="60%" stop-color="#32e875" />
+      <stop offset="100%" stop-color="#00e600" />
+    </radialGradient>
+  </defs>
+
+  <!-- face -->
+  <circle cx="50" cy="50" r="45" fill="url(#faceGrad)" />
+
+  <!-- eyes -->
+  <rect x="40" y="42" width="4" height="16" rx="1" fill="#000" />
+  <rect x="56" y="42" width="4" height="16" rx="1" fill="#000" />
+</svg>
