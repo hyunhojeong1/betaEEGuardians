@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { useUserStore } from "@/stores/userStore";
 import CartItemCard from "@/components/cart/CartItemCard";
-import cartHowToUse1 from "@/assets/cart_how_to_use_1.png";
 import TimeSlotSelector, {
   generateDefaultTimeSlots,
 } from "@/components/shop/TimeSlotSelector";
@@ -35,7 +34,7 @@ function formatKoreaDate(date: Date): string {
   const day = date.getDate();
   return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(
     2,
-    "0"
+    "0",
   )}`;
 }
 
@@ -96,7 +95,7 @@ export default function CartPage() {
 
   // cartStore에서 저장된 시간대를 초기값으로 사용
   const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(
-    cartTimeSlot?.id || null
+    cartTimeSlot?.id || null,
   );
 
   // 페이지 진입 시 용기 잔액 및 멤버십 조회 (customer만)
@@ -172,7 +171,7 @@ export default function CartPage() {
         const serverSlots = await getOpenHours(currentDateType);
         const updatedSlots = applyOpenHoursToSlots(
           defaultTimeSlots,
-          serverSlots
+          serverSlots,
         );
         setTimeSlots(updatedSlots);
 
@@ -221,7 +220,7 @@ export default function CartPage() {
       alert(
         `${
           selectedDateOffset === 0 ? "오늘" : "익일"
-        } 배송 시간대가 저장되었습니다.`
+        } 배송 시간대가 저장되었습니다.`,
       );
     } catch (error) {
       console.error("Failed to save open hours:", error);
@@ -239,7 +238,7 @@ export default function CartPage() {
 
   // 현재 선택된 시간대 정보
   const selectedTimeSlot = timeSlots.find(
-    (slot) => slot.id === selectedTimeSlotId
+    (slot) => slot.id === selectedTimeSlotId,
   );
 
   // 주문하기 버튼 클릭 핸들러
@@ -290,7 +289,7 @@ export default function CartPage() {
       const firebaseError = error as { code?: string; message?: string };
       alert(
         firebaseError.message ||
-          "주문 중 오류가 발생했습니다. 다시 시도해주세요."
+          "주문 중 오류가 발생했습니다. 다시 시도해주세요.",
       );
     } finally {
       setIsOrdering(false);
@@ -424,13 +423,9 @@ export default function CartPage() {
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-base sm:text-sm text-gray-600">
-                배송비
-              </span>
+              <span className="text-base sm:text-sm text-gray-600">배송비</span>
               <span className="text-base sm:text-sm text-gray-700">
-                {deliveryFee > 0
-                  ? `${deliveryFee.toLocaleString()}원`
-                  : "무료"}
+                {deliveryFee > 0 ? `${deliveryFee.toLocaleString()}원` : "무료"}
               </span>
             </div>
             <div className="border-t border-gray-200 pt-2 flex items-center justify-between">
@@ -452,31 +447,14 @@ export default function CartPage() {
               <li className="flex gap-2">
                 <span className="font-medium">1.</span>
                 <span>
-                  회수할 지환수 상자가 있는 경우, 배송 전까지 현관문 앞에
-                  내놓아주세요.
-                  <br />
-                  (첫 주문이신 분께는 해당되지 않습니다. '이용 안내' 설명을
-                  참조해 주세요.)
+                  회수할 지환수 상자가 있는 경우, 배송기사님 도착 전까지 현관문
+                  밖에 내놓아주세요.
                 </span>
               </li>
-              <li className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <span className="font-medium">2.</span>
-                  <span>
-                    아 맞다, 음식물 쓰레기! - 잔반 회수 용기도 잊지 마시고 함께
-                    배출해 주세요.
-                  </span>
-                </div>
-                <img
-                  src={cartHowToUse1}
-                  alt="음식물 쓰레기 배출 안내"
-                  className="w-full max-w-[540px] rounded-lg"
-                />
-              </li>
               <li className="flex gap-2">
-                <span className="font-medium">3.</span>
+                <span className="font-medium">2.</span>
                 <span>
-                  개인 다회용기도 추가로 내놓으신다면 - 용기 개수와 세척 필요
+                  개인 다회용기도 함께 내놓으신다면 - 용기 개수와 세척 필요
                   여부를 알려주세요.
                 </span>
               </li>
@@ -500,7 +478,7 @@ export default function CartPage() {
                 {/* 용기 수량 입력 */}
                 <div className="flex items-center gap-2">
                   <span className="text-base sm:text-sm text-amber-700 font-medium">
-                    추가하실 개인 용기 개수:
+                    충전하실 개인 용기 개수:
                   </span>
                   <input
                     type="number"
@@ -568,8 +546,8 @@ export default function CartPage() {
             {isOrdering
               ? "주문 처리 중..."
               : selectedTimeSlot
-              ? "주문하기"
-              : "배송 시간대를 선택해주세요"}
+                ? "주문하기"
+                : "배송 시간대를 선택해주세요"}
           </button>
         </>
       )}

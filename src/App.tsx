@@ -6,6 +6,7 @@ import {
   CartPage,
   OrdersPage,
   StaffTodoPage,
+  RefillTicketPage,
 } from "./pages";
 import VerificationGate from "./components/VerificationGate";
 import TermsModal from "./components/common/TermsModal";
@@ -51,6 +52,9 @@ function App() {
               </Link>
               <Link to="/orders" className="text-gray-600 hover:text-blue-600">
                 주문내역
+              </Link>
+              <Link to="/refill-ticket" className="text-gray-600 hover:text-blue-600">
+                충전권 사용
               </Link>
               {verificationCode && (
                 <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
@@ -134,6 +138,13 @@ function App() {
                 >
                   주문내역
                 </Link>
+                <Link
+                  to="/refill-ticket"
+                  className="px-2 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  충전권 사용
+                </Link>
                 {verificationCode && (
                   <span className="px-2 py-1 text-xs text-gray-400 bg-gray-100 rounded">
                     테스터: {verificationCode}
@@ -161,6 +172,7 @@ function App() {
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/refill-ticket" element={<RefillTicketPage />} />
             <Route path="/staff-todo" element={<StaffTodoPage />} />
           </Routes>
         </VerificationGate>

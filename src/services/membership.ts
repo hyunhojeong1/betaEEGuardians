@@ -4,7 +4,7 @@ import { functions } from "@/services/firebase";
 export interface GetMembershipResponse {
   success: boolean;
   deliveryFee: number;
-  collectionTicket: number;
+  refillTicket: number;
 }
 
 /**
@@ -16,5 +16,30 @@ export async function getMembership(): Promise<GetMembershipResponse> {
     "getMembership"
   );
   const result = await fn();
+  return result.data;
+}
+
+export interface UseRefillTicketRequest {
+  containerCount: number;
+  needsWashing: boolean;
+}
+
+export interface UseRefillTicketResponse {
+  success: boolean;
+  message: string;
+  remainingTickets: number;
+}
+
+/**
+ * 충전권 사용 (Cloud Function 호출)
+ */
+export async function useRefillTicket(
+  data: UseRefillTicketRequest
+): Promise<UseRefillTicketResponse> {
+  const fn = httpsCallable<UseRefillTicketRequest, UseRefillTicketResponse>(
+    functions,
+    "useRefillTicket"
+  );
+  const result = await fn(data);
   return result.data;
 }
