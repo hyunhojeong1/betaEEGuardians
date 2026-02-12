@@ -23,7 +23,7 @@ function App() {
   const { verificationCode } = useVerificationStore();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -165,7 +165,7 @@ function App() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto">
+      <main className="max-w-6xl mx-auto min-h-screen">
         <VerificationGate>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -179,7 +179,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300 mt-16">
+      <footer className="bg-gray-800 text-gray-300">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center">
             <p className="text-lg font-semibold text-white mb-3">

@@ -287,10 +287,15 @@ export default function CartPage() {
     } catch (error: unknown) {
       console.error("주문 오류:", error);
       const firebaseError = error as { code?: string; message?: string };
-      alert(
+      const errorMessage =
         firebaseError.message ||
-          "주문 중 오류가 발생했습니다. 다시 시도해주세요.",
-      );
+        "주문 중 오류가 발생했습니다. 다시 시도해주세요.";
+      alert(errorMessage);
+
+      // 시간대 마감 관련 에러면 새로고침
+      if (errorMessage.includes("시간대 예약이 마감")) {
+        window.location.reload();
+      }
     } finally {
       setIsOrdering(false);
     }

@@ -48,7 +48,9 @@ export default function RefillTicketPage() {
       return;
     }
 
-    const confirmed = window.confirm("충전권이 1회 차감됩니다. 사용하시겠습니까?");
+    const confirmed = window.confirm(
+      "충전권이 1회 차감됩니다. 사용하시겠습니까?",
+    );
     if (!confirmed) return;
 
     setIsSubmitting(true);
@@ -208,7 +210,7 @@ export default function RefillTicketPage() {
           ? "처리 중..."
           : refillTicket <= 0
             ? "사용 가능한 충전권이 없습니다"
-            : "충전권 사용 호출하기"}
+            : "충전권 사용하여 호출하기"}
       </button>
     </div>
   );

@@ -26,3 +26,7 @@ functions
 *.sln
 *.sw?
 CLAUDE.md
+
+# Scripts (seed data)
+scripts/serviceAccountKey.json
+scripts/*.csv

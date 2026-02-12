@@ -134,15 +134,15 @@ export default function HomePage() {
         <div className="flex flex-col items-center">
           <div className="relative w-full md:w-[710px]">
             <img src={howToUse} alt="이용방법 안내" className="w-full" />
-            {/* 호출하기 버튼 오버레이 - 위치 조절용 (나중에 투명으로 변경) */}
+            {/* 호출하기 버튼 오버레이 */}
             <button
               onClick={scrollToCallSection}
               className="absolute cursor-pointer hover:bg-white/20 transition-colors"
               style={{
-                top: "15.5%",
+                top: "35%",
                 left: "30%",
                 width: "40%",
-                height: "1.5%",
+                height: "3%",
               }}
               aria-label="호출하기 섹션으로 이동"
             />
@@ -170,9 +170,9 @@ export default function HomePage() {
             <li className="flex gap-2">
               <span className="font-medium">2.</span>
               <span>
-                개인 용기를 '식품 배송용 상자'에 담아, 자물쇠를 잠그고 현관문
-                앞에 내놓아주세요. <br />
-                위생을 위해 용기 뚜껑을 닫아주세요.
+                개인 용기를 식품 배송용 상자에 담아, 자물쇠를 잠그고 현관문 밖에
+                내놓아주세요. <br />
+                안전과 위생을 위해 용기 뚜껑을 꼭 닫아주세요.
               </span>
             </li>
           </ol>
