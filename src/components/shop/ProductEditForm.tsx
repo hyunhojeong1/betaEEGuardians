@@ -45,6 +45,7 @@ export default function ProductEditForm({
   // 상태
   const [inStock, setInStock] = useState(product.inStock);
   const [isActive, setIsActive] = useState(product.isActive);
+  const [useDetailImageYN, setUseDetailImageYN] = useState(product.useDetailImageYN ?? false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -169,6 +170,7 @@ export default function ProductEditForm({
         packagingIndependenceCode: packagingIndependenceCode.trim(),
         tags,
         specifications: specifications.trim() || undefined,
+        useDetailImageYN,
       });
       alert(result.message || "상품이 수정되었습니다.");
       onSuccess();
@@ -343,6 +345,16 @@ export default function ProductEditForm({
                 disabled={isSubmitting}
               />
               <span className="text-base text-gray-600">노출</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useDetailImageYN}
+                onChange={(e) => setUseDetailImageYN(e.target.checked)}
+                className="w-5 h-5 text-blue-600"
+                disabled={isSubmitting}
+              />
+              <span className="text-base text-gray-600">상세</span>
             </label>
           </div>
         </div>
@@ -692,6 +704,16 @@ export default function ProductEditForm({
                   disabled={isSubmitting}
                 />
                 <span className="text-xs text-gray-600">노출</span>
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useDetailImageYN}
+                  onChange={(e) => setUseDetailImageYN(e.target.checked)}
+                  className="w-3.5 h-3.5 text-blue-600"
+                  disabled={isSubmitting}
+                />
+                <span className="text-xs text-gray-600">상세</span>
               </label>
             </div>
           </div>

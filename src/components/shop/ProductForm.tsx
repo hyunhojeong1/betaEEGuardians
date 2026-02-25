@@ -45,6 +45,7 @@ export default function ProductForm({
   // 상태
   const [inStock, setInStock] = useState(true);
   const [isActive, setIsActive] = useState(true);
+  const [useDetailImageYN, setUseDetailImageYN] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -67,7 +68,7 @@ export default function ProductForm({
   const generateProductId = () => {
     if (!category2Id || !idNumber || !idLetter) return "";
     const paddedNumber = idNumber.padStart(2, "0");
-    return `${category2Id}${paddedNumber}${idLetter}`;
+    return `${category2Id}${idLetter}${paddedNumber}`;
   };
 
   // 이미지 업로드 핸들러
@@ -213,6 +214,7 @@ export default function ProductForm({
         packagingIndependenceCode: packagingIndependenceCode.trim(),
         tags,
         specifications: specifications.trim() || undefined,
+        useDetailImageYN,
       });
       alert(result.message || "상품이 저장되었습니다.");
       onSuccess();
@@ -263,19 +265,19 @@ export default function ProductForm({
           </select>
           <input
             type="text"
-            value={idNumber}
-            onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 2))}
-            placeholder="00"
-            maxLength={2}
+            value={idLetter}
+            onChange={(e) => setIdLetter(e.target.value.toLowerCase().slice(0, 1))}
+            placeholder="a"
+            maxLength={1}
             className="col-span-1 px-2 py-2 border border-gray-300 rounded text-base text-center"
             disabled={isSubmitting}
           />
           <input
             type="text"
-            value={idLetter}
-            onChange={(e) => setIdLetter(e.target.value.toLowerCase().slice(0, 1))}
-            placeholder="a"
-            maxLength={1}
+            value={idNumber}
+            onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 2))}
+            placeholder="00"
+            maxLength={2}
             className="col-span-1 px-2 py-2 border border-gray-300 rounded text-base text-center"
             disabled={isSubmitting}
           />
@@ -427,6 +429,16 @@ export default function ProductForm({
                 disabled={isSubmitting}
               />
               <span className="text-base text-gray-600">노출</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useDetailImageYN}
+                onChange={(e) => setUseDetailImageYN(e.target.checked)}
+                className="w-5 h-5 text-blue-600"
+                disabled={isSubmitting}
+              />
+              <span className="text-base text-gray-600">상세</span>
             </label>
           </div>
         </div>
@@ -627,20 +639,20 @@ export default function ProductForm({
               <div className="flex gap-0.5">
                 <input
                   type="text"
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 2))}
-                  placeholder="00"
-                  maxLength={2}
-                  className="w-8 px-1 py-1.5 border border-gray-300 rounded text-xs text-center"
-                  disabled={isSubmitting}
-                />
-                <input
-                  type="text"
                   value={idLetter}
                   onChange={(e) => setIdLetter(e.target.value.toLowerCase().slice(0, 1))}
                   placeholder="a"
                   maxLength={1}
                   className="w-7 px-1 py-1.5 border border-gray-300 rounded text-xs text-center"
+                  disabled={isSubmitting}
+                />
+                <input
+                  type="text"
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                  placeholder="00"
+                  maxLength={2}
+                  className="w-8 px-1 py-1.5 border border-gray-300 rounded text-xs text-center"
                   disabled={isSubmitting}
                 />
               </div>
@@ -854,6 +866,16 @@ export default function ProductForm({
                   disabled={isSubmitting}
                 />
                 <span className="text-xs text-gray-600">노출</span>
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useDetailImageYN}
+                  onChange={(e) => setUseDetailImageYN(e.target.checked)}
+                  className="w-3.5 h-3.5 text-blue-600"
+                  disabled={isSubmitting}
+                />
+                <span className="text-xs text-gray-600">상세</span>
               </label>
             </div>
           </div>

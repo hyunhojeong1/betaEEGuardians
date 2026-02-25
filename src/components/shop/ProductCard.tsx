@@ -23,6 +23,7 @@ export default function ProductCard({
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
   const [showAddedMessage, setShowAddedMessage] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const handleAddToCart = () => {
     onAddToCart(product, quantity);
@@ -77,7 +78,12 @@ export default function ProductCard({
           <div className="flex-1 min-w-0 hidden sm:block">
             {/* 상품명 & 카테고리 */}
             <div className="mb-1">
-              <h3 className="font-semibold text-gray-900">{product.name}</h3>
+              <h3 className="font-semibold text-gray-900">
+                {product.name}
+                {product.specifications && (
+                  <span>({product.specifications})</span>
+                )}
+              </h3>
               <span className="text-xs text-gray-400">
                 ({category1Name} &gt; {category2Name})
               </span>
@@ -90,13 +96,6 @@ export default function ProductCard({
 
             {/* 공급처 */}
             <p className="text-xs text-gray-500 mb-1">{product.supplier}</p>
-
-            {/* 제품 스펙 */}
-            {product.specifications && (
-              <p className="text-xs text-gray-400 mb-1">
-                {product.specifications}
-              </p>
-            )}
 
             {/* 상품 설명 */}
             {product.description && (
@@ -166,13 +165,23 @@ export default function ProductCard({
             {/* 담기 버튼 (Customer만) */}
             {!isStaff && (
               <div className="flex flex-col items-end">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  담기
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!product.inStock}
+                    className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    담기
+                  </button>
+                  {product.useDetailImageYN && (
+                    <button
+                      onClick={() => setShowDetailModal(true)}
+                      className="px-4 py-1.5 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                    >
+                      상세
+                    </button>
+                  )}
+                </div>
                 {showAddedMessage && (
                   <span className="text-xs text-green-600 mt-1">
                     담았습니다!
@@ -214,7 +223,12 @@ export default function ProductCard({
           <div className="flex-1 min-w-0">
             {/* 상품명 & 카테고리 */}
             <div className="mb-1">
-              <h3 className="font-semibold text-gray-900 text-lg">{product.name}</h3>
+              <h3 className="font-semibold text-gray-900 text-lg">
+                {product.name}
+                {product.specifications && (
+                  <span>({product.specifications})</span>
+                )}
+              </h3>
               <span className="text-base text-gray-400">
                 ({category1Name} &gt; {category2Name})
               </span>
@@ -227,11 +241,9 @@ export default function ProductCard({
               <span>{product.supplier}</span>
             </div>
 
-            {/* 제품 스펙 & 설명 */}
-            {(product.specifications || product.description) && (
+            {/* 상품 설명 */}
+            {product.description && (
               <p className="text-base text-gray-400 mt-1 line-clamp-2">
-                {product.specifications}
-                {product.specifications && product.description && " · "}
                 {product.description}
               </p>
             )}
@@ -264,13 +276,23 @@ export default function ProductCard({
             {/* 담기 버튼 (Customer만) */}
             {!isStaff && (
               <div className="flex flex-col items-end">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  className="px-6 py-2.5 text-lg bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  담기
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!product.inStock}
+                    className="px-6 py-2.5 text-lg bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    담기
+                  </button>
+                  {product.useDetailImageYN && (
+                    <button
+                      onClick={() => setShowDetailModal(true)}
+                      className="px-6 py-2.5 text-lg bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                    >
+                      상세
+                    </button>
+                  )}
+                </div>
                 {showAddedMessage && (
                   <span className="text-base text-green-600 mt-1">
                     담았습니다!
@@ -304,6 +326,69 @@ export default function ProductCard({
           </div>
         </div>
       </div>
+      {/* 상세 이미지 모달 */}
+      {showDetailModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowDetailModal(false)}
+        >
+          <div
+            className="relative bg-white rounded-2xl max-w-lg w-[90vw] max-h-[85vh] overflow-y-auto p-4 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {product.name} 상세정보
+              </h3>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 상세 이미지 목록 */}
+            <div className="flex flex-col gap-4">
+              {product.detail1ImageUrl && (
+                <img
+                  src={product.detail1ImageUrl}
+                  alt={`${product.name} 상세 1`}
+                  className="w-full rounded-lg object-contain"
+                />
+              )}
+              {product.detail2ImageUrl && (
+                <img
+                  src={product.detail2ImageUrl}
+                  alt={`${product.name} 상세 2`}
+                  className="w-full rounded-lg object-contain"
+                />
+              )}
+              {product.detail3ImageUrl && (
+                <img
+                  src={product.detail3ImageUrl}
+                  alt={`${product.name} 상세 3`}
+                  className="w-full rounded-lg object-contain"
+                />
+              )}
+              {!product.detail1ImageUrl && !product.detail2ImageUrl && !product.detail3ImageUrl && (
+                <p className="text-center text-gray-400 py-8">
+                  등록된 상세 이미지가 없습니다.
+                </p>
+              )}
+            </div>
+
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setShowDetailModal(false)}
+              className="mt-4 w-full py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

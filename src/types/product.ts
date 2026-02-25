@@ -12,13 +12,13 @@ export interface Category2 {
 }
 
 export interface Product {
-  id: string; // (category2Id) + (00-99) + (a-z) 형식
+  id: string; // (category2Id) + (a-z) + (00-99) 형식
   name: string;
   category1Id: string;
   category2Id: string;
   imageUrl: string;
   pricePerUnit: number; // 단위당 가격
-  unit: string; // "100g", "1개" 등
+  unit: string; // "100g", "1개" 등 가격 비교용 단위
   supplier: string; // 공급처
   description?: string;
   inStock: boolean;
@@ -30,6 +30,10 @@ export interface Product {
   packagingIndependenceCode: string; // 포장독립성 코드
   tags: string[]; // 검색 키워드
   specifications?: string; // 제품 사이즈, 향, 맛 등 스펙
+  useDetailImageYN: boolean; // 상세 이미지 사용 여부 (기본값 false)
+  detail1ImageUrl?: string; // 상세 이미지 1
+  detail2ImageUrl?: string; // 상세 이미지 2
+  detail3ImageUrl?: string; // 상세 이미지 3
   createdAt: Date;
   updatedAt: Date;
 }

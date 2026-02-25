@@ -20,6 +20,7 @@ interface AddProductRequest {
   packagingIndependenceCode: string;
   tags: string[];
   specifications?: string;
+  useDetailImageYN?: boolean;
 }
 
 interface AddProductResponse {
@@ -47,6 +48,10 @@ export interface ProductData {
   packagingIndependenceCode: string;
   tags: string[];
   specifications?: string;
+  useDetailImageYN?: boolean;
+  detail1ImageUrl?: string;
+  detail2ImageUrl?: string;
+  detail3ImageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

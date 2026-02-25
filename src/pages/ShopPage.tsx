@@ -26,6 +26,7 @@ import type { Category1, Category2, Product } from "@/types/product";
 function toProduct(data: ProductData): Product {
   return {
     ...data,
+    useDetailImageYN: data.useDetailImageYN ?? false,
     createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
     updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
   };
