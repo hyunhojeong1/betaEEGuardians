@@ -31,7 +31,7 @@ const PRODUCT_SCHEMA = {
     "estimatedVolumePerMinUnit",
   ],
   // 불리언 필드
-  booleanFields: ["inStock", "isActive"],
+  booleanFields: ["inStock", "isActive", "useDetailImageYN"],
   // 배열 필드 (CSV에서 세미콜론 또는 파이프로 구분)
   arrayFields: ["tags"],
   // 문자열 필드 (나머지)
@@ -47,6 +47,9 @@ const PRODUCT_SCHEMA = {
     "orderUnit",
     "packagingIndependenceCode",
     "specifications",
+    "detail1ImageUrl",
+    "detail2ImageUrl",
+    "detail3ImageUrl",
     "consumptionDeadline",
     "expiryDate",
   ],
