@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useUserStore } from "@/stores/userStore";
 import { useCartStore } from "@/stores/cartStore";
 import SearchBar from "@/components/shop/SearchBar";
@@ -14,10 +14,11 @@ import NoticeBanner from "@/components/shop/NoticeBanner";
 import { getCategories } from "@/services/category";
 import {
   getProducts,
-  searchProducts,
+  getProductsByIds,
   deleteProduct,
   type ProductData,
 } from "@/services/product";
+import { searchProductIds } from "@/services/algolia";
 import { getNotice } from "@/services/notice";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { Category1, Category2, Product } from "@/types/product";
@@ -39,10 +40,10 @@ export default function ShopPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory1Id, setSelectedCategory1Id] = useState<string | null>(
-    null
+    null,
   );
   const [selectedCategory2Id, setSelectedCategory2Id] = useState<string | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -53,6 +54,11 @@ export default function ShopPage() {
 
   // 상품 상태
   const [products, setProducts] = useState<Product[]>([]);
+
+  // 인피니티 스크롤 상태
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // 편집 중인 상품 ID
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -68,38 +74,85 @@ export default function ShopPage() {
   // 검색어 debounce (1초)
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  // 상품 목록 불러오기
+  // 상품 목록 불러오기 (첫 페이지)
   const fetchProducts = useCallback(
     async (
       category1Id?: string | null,
       category2Id?: string | null,
-      query?: string
+      query?: string,
     ) => {
       setIsLoadingProducts(true);
       try {
-        let productData: ProductData[];
-
         if (query && query.trim()) {
-          // 검색어가 있으면 검색 API 사용
-          productData = await searchProducts(query.trim());
+          // Algolia 검색 → ID 목록 → Firestore 조회
+          const ids = await searchProductIds(query.trim());
+          const productData = await getProductsByIds(ids);
+          setProducts(productData.map(toProduct));
+          setHasMore(false);
         } else {
-          // 카테고리 필터링
-          productData = await getProducts(
+          // 카테고리 필터링 (페이지네이션)
+          const result = await getProducts(
             category1Id || undefined,
-            category2Id || undefined
+            category2Id || undefined,
           );
+          setProducts(result.products.map(toProduct));
+          setHasMore(result.hasMore);
         }
-
-        setProducts(productData.map(toProduct));
       } catch (error) {
         console.error("Failed to fetch products:", error);
         setProducts([]);
+        setHasMore(false);
       } finally {
         setIsLoadingProducts(false);
       }
     },
-    []
+    [],
   );
+
+  // 다음 페이지 불러오기
+  const fetchMoreProducts = useCallback(async () => {
+    if (isLoadingMore || !hasMore || products.length === 0) return;
+
+    setIsLoadingMore(true);
+    try {
+      const lastProductId = products[products.length - 1].id;
+      const result = await getProducts(
+        selectedCategory1Id || undefined,
+        selectedCategory2Id || undefined,
+        lastProductId,
+      );
+      setProducts((prev) => [...prev, ...result.products.map(toProduct)]);
+      setHasMore(result.hasMore);
+    } catch (error) {
+      console.error("Failed to fetch more products:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [
+    isLoadingMore,
+    hasMore,
+    products,
+    selectedCategory1Id,
+    selectedCategory2Id,
+  ]);
+
+  // IntersectionObserver로 스크롤 하단 감지
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          fetchMoreProducts();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingMore, fetchMoreProducts]);
 
   // 페이지 진입 시 데이터 불러오기 (최초 1회)
   useEffect(() => {
@@ -133,7 +186,7 @@ export default function ShopPage() {
       fetchProducts(
         selectedCategory1Id,
         selectedCategory2Id,
-        debouncedSearchQuery
+        debouncedSearchQuery,
       );
     }
   }, [
@@ -160,7 +213,7 @@ export default function ShopPage() {
     fetchProducts(
       selectedCategory1Id,
       selectedCategory2Id,
-      debouncedSearchQuery
+      debouncedSearchQuery,
     );
   };
 
@@ -202,7 +255,7 @@ export default function ShopPage() {
   const handleDeleteProduct = async (product: Product) => {
     // 삭제 확인 Alert
     const confirmed = window.confirm(
-      `정말로 "${product.name}" 상품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+      `정말로 "${product.name}" 상품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`,
     );
 
     if (!confirmed) return;
@@ -279,7 +332,8 @@ export default function ShopPage() {
             href="/cart"
             className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100"
           >
-            {orderDate && `${formatOrderDate(orderDate)} `}{cartTimeSlot.label} 배송
+            {orderDate && `${formatOrderDate(orderDate)} `}
+            {cartTimeSlot.label} 배송
           </a>
         )}
       </div>
@@ -394,8 +448,16 @@ export default function ShopPage() {
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
               />
-            )
+            ),
           )
+        )}
+
+        {/* 인피니티 스크롤 감지용 sentinel */}
+        <div ref={sentinelRef} />
+        {isLoadingMore && (
+          <div className="text-center py-4 text-gray-500">
+            더 불러오는 중...
+          </div>
         )}
       </div>
     </div>

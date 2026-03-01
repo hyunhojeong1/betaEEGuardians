@@ -12,7 +12,7 @@ export interface Category2 {
 }
 
 export interface Product {
-  id: string; // (category2Id) + (a-z) + (00-99) 형식
+  id: string; // (category2Id) + (a-z) + (000-999) 형식
   name: string;
   category1Id: string;
   category2Id: string;

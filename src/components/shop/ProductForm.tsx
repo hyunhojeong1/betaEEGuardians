@@ -67,7 +67,7 @@ export default function ProductForm({
 
   const generateProductId = () => {
     if (!category2Id || !idNumber || !idLetter) return "";
-    const paddedNumber = idNumber.padStart(2, "0");
+    const paddedNumber = idNumber.padStart(3, "0");
     return `${category2Id}${idLetter}${paddedNumber}`;
   };
 
@@ -150,8 +150,8 @@ export default function ProductForm({
       setError("카테고리2를 선택해주세요.");
       return;
     }
-    if (!idNumber || !/^\d{1,2}$/.test(idNumber)) {
-      setError("ID 숫자는 0-99 사이로 입력해주세요.");
+    if (!idNumber || !/^\d{1,3}$/.test(idNumber)) {
+      setError("ID 숫자는 0-999 사이로 입력해주세요.");
       return;
     }
     if (!idLetter || !/^[a-z]$/.test(idLetter)) {
@@ -275,9 +275,9 @@ export default function ProductForm({
           <input
             type="text"
             value={idNumber}
-            onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 2))}
-            placeholder="00"
-            maxLength={2}
+            onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 3))}
+            placeholder="000"
+            maxLength={3}
             className="col-span-1 px-2 py-2 border border-gray-300 rounded text-base text-center"
             disabled={isSubmitting}
           />
@@ -634,7 +634,7 @@ export default function ProductForm({
                 ))}
               </select>
             </div>
-            <div className="w-16">
+            <div className="w-20">
               <label className="block text-xs text-gray-500 mb-1">ID</label>
               <div className="flex gap-0.5">
                 <input
@@ -649,10 +649,10 @@ export default function ProductForm({
                 <input
                   type="text"
                   value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 2))}
-                  placeholder="00"
-                  maxLength={2}
-                  className="w-8 px-1 py-1.5 border border-gray-300 rounded text-xs text-center"
+                  onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                  placeholder="000"
+                  maxLength={3}
+                  className="w-10 px-1 py-1.5 border border-gray-300 rounded text-xs text-center"
                   disabled={isSubmitting}
                 />
               </div>

@@ -59,17 +59,20 @@ export interface ProductData {
 interface GetProductsRequest {
   category1Id?: string;
   category2Id?: string;
+  limit?: number;
+  startAfterId?: string;
 }
 
 interface GetProductsResponse {
   products: ProductData[];
+  hasMore: boolean;
 }
 
-interface SearchProductsRequest {
-  query: string;
+interface GetProductsByIdsRequest {
+  ids: string[];
 }
 
-interface SearchProductsResponse {
+interface GetProductsByIdsResponse {
   products: ProductData[];
 }
 
@@ -89,31 +92,35 @@ export async function addProduct(
 }
 
 /**
- * 상품 목록 조회 (카테고리 필터링)
+ * 상품 목록 조회 (카테고리 필터링 + 페이지네이션)
  */
 export async function getProducts(
   category1Id?: string,
-  category2Id?: string
-): Promise<ProductData[]> {
+  category2Id?: string,
+  startAfterId?: string,
+  limit?: number
+): Promise<{ products: ProductData[]; hasMore: boolean }> {
   const getProductsFn = httpsCallable<GetProductsRequest, GetProductsResponse>(
     functions,
     "getProducts"
   );
 
-  const result = await getProductsFn({ category1Id, category2Id });
-  return result.data.products;
+  const result = await getProductsFn({ category1Id, category2Id, startAfterId, limit });
+  return result.data;
 }
 
 /**
- * 상품 검색 (태그 매칭)
+ * 상품 ID 배열로 조회 (Algolia 검색 결과 → Firestore 데이터 조회용)
  */
-export async function searchProducts(query: string): Promise<ProductData[]> {
-  const searchProductsFn = httpsCallable<SearchProductsRequest, SearchProductsResponse>(
+export async function getProductsByIds(ids: string[]): Promise<ProductData[]> {
+  if (ids.length === 0) return [];
+
+  const fn = httpsCallable<GetProductsByIdsRequest, GetProductsByIdsResponse>(
     functions,
-    "searchProducts"
+    "getProductsByIds"
   );
 
-  const result = await searchProductsFn({ query });
+  const result = await fn({ ids });
   return result.data.products;
 }
 
