@@ -32,16 +32,15 @@ export default function CategorySelector({
     <div className="space-y-3">
       {/* Category1 선택 */}
       <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => onSelectCategory1(null)}
-          className={`px-5 sm:px-4 py-2.5 sm:py-2 rounded-full text-base sm:text-sm font-medium transition-colors ${
+        <span
+          className={`px-5 sm:px-4 py-2.5 sm:py-2 rounded-full text-base sm:text-sm font-medium ${
             selectedCategory1Id === null
               ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              : "hidden"
           }`}
         >
-          전체
-        </button>
+          상품 유형을 선택하세요
+        </span>
         {categories1.map((category) => (
           <button
             key={category.id}

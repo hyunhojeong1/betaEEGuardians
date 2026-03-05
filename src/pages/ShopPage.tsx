@@ -81,6 +81,13 @@ export default function ShopPage() {
       category2Id?: string | null,
       query?: string,
     ) => {
+      // 검색어가 없고 category1도 미선택이면 상품 조회하지 않음
+      if (!query?.trim() && !category1Id) {
+        setProducts([]);
+        setHasMore(false);
+        return;
+      }
+
       setIsLoadingProducts(true);
       try {
         if (query && query.trim()) {
@@ -168,8 +175,7 @@ export default function ShopPage() {
         setCategories2(categoriesData.categories2);
         setNoticeComment(notice);
 
-        // 전체 상품 불러오기
-        await fetchProducts();
+        // category1 미선택 상태이므로 상품은 불러오지 않음
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
       } finally {
@@ -421,7 +427,9 @@ export default function ShopPage() {
           <div className="text-center py-10 text-gray-500">
             {searchQuery
               ? `"${searchQuery}"에 대한 검색 결과가 없습니다.`
-              : "해당 카테고리에 상품이 없습니다."}
+              : !selectedCategory1Id
+                ? "상품 유형을 선택하면 상품이 표시됩니다."
+                : "해당 카테고리에 상품이 없습니다."}
           </div>
         ) : (
           products.map((product) =>
