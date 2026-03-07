@@ -22,6 +22,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [detailImageErrors, setDetailImageErrors] = useState<Record<string, boolean>>({});
   const [showAddedMessage, setShowAddedMessage] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -64,7 +65,7 @@ export default function ProductCard({
               <img
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onError={() => setImageError(true)}
               />
             ) : (
@@ -333,7 +334,7 @@ export default function ProductCard({
           onClick={() => setShowDetailModal(false)}
         >
           <div
-            className="relative bg-white rounded-2xl max-w-lg w-[90vw] max-h-[85vh] overflow-y-auto p-4 sm:p-6"
+            className="relative bg-white rounded-2xl max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             {/* 헤더 */}
@@ -351,28 +352,31 @@ export default function ProductCard({
 
             {/* 상세 이미지 목록 */}
             <div className="flex flex-col gap-4">
-              {product.detail1ImageUrl && (
+              {product.detail1ImageUrl?.trim() && !detailImageErrors["detail1"] && (
                 <img
                   src={product.detail1ImageUrl}
                   alt={`${product.name} 상세 1`}
-                  className="w-full rounded-lg object-contain"
+                  className="w-full max-h-[75vh] rounded-lg object-contain"
+                  onError={() => setDetailImageErrors((prev) => ({ ...prev, detail1: true }))}
                 />
               )}
-              {product.detail2ImageUrl && (
+              {product.detail2ImageUrl?.trim() && !detailImageErrors["detail2"] && (
                 <img
                   src={product.detail2ImageUrl}
                   alt={`${product.name} 상세 2`}
-                  className="w-full rounded-lg object-contain"
+                  className="w-full max-h-[75vh] rounded-lg object-contain"
+                  onError={() => setDetailImageErrors((prev) => ({ ...prev, detail2: true }))}
                 />
               )}
-              {product.detail3ImageUrl && (
+              {product.detail3ImageUrl?.trim() && !detailImageErrors["detail3"] && (
                 <img
                   src={product.detail3ImageUrl}
                   alt={`${product.name} 상세 3`}
-                  className="w-full rounded-lg object-contain"
+                  className="w-full max-h-[75vh] rounded-lg object-contain"
+                  onError={() => setDetailImageErrors((prev) => ({ ...prev, detail3: true }))}
                 />
               )}
-              {!product.detail1ImageUrl && !product.detail2ImageUrl && !product.detail3ImageUrl && (
+              {!product.detail1ImageUrl?.trim() && !product.detail2ImageUrl?.trim() && !product.detail3ImageUrl?.trim() && (
                 <p className="text-center text-gray-400 py-8">
                   등록된 상세 이미지가 없습니다.
                 </p>
