@@ -30,6 +30,7 @@ export interface Product {
   packagingIndependenceCode: string; // 포장독립성 코드
   tags: string[]; // 검색 키워드
   specifications?: string; // 제품 사이즈, 향, 맛 등 스펙
+  recommend: boolean; // 추천 상품 여부 (기본값 false)
   useDetailImageYN: boolean; // 상세 이미지 사용 여부 (기본값 false)
   detail1ImageUrl?: string; // 상세 이미지 1
   detail2ImageUrl?: string; // 상세 이미지 2

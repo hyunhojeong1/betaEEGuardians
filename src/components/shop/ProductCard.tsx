@@ -22,7 +22,9 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
-  const [detailImageErrors, setDetailImageErrors] = useState<Record<string, boolean>>({});
+  const [detailImageErrors, setDetailImageErrors] = useState<
+    Record<string, boolean>
+  >({});
   const [showAddedMessage, setShowAddedMessage] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -33,7 +35,7 @@ export default function ProductCard({
   };
 
   const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, prev + delta));
+    setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
   };
 
   // 최소 주문당 가격 기준으로 계산
@@ -77,33 +79,28 @@ export default function ProductCard({
 
           {/* 상품 정보 (태블릿 이상에서만 표시) */}
           <div className="flex-1 min-w-0 hidden sm:block">
-            {/* 상품명 & 카테고리 */}
-            <div className="mb-1">
-              <h3 className="font-semibold text-gray-900">
-                {product.name}
-                {product.specifications && (
-                  <span>({product.specifications})</span>
-                )}
-              </h3>
-              <span className="text-xs text-gray-400">
-                ({category1Name} &gt; {category2Name})
-              </span>
-            </div>
+            {/* 상품명 */}
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {product.name}
+              {product.specifications && (
+                <span>({product.specifications})</span>
+              )}
+            </h3>
+
+            {/* 상품 설명 */}
+            {product.description && (
+              <p className="text-sm text-gray-500 line-clamp-2 mb-1">
+                {product.description}
+              </p>
+            )}
 
             {/* 단위당 가격 */}
             <p className="text-sm text-gray-600 mb-1">
-              {product.pricePerUnit.toLocaleString()}원 / {product.unit}
+              {product.unit}당 {product.pricePerUnit.toLocaleString()}원
             </p>
 
             {/* 공급처 */}
             <p className="text-xs text-gray-500 mb-1">{product.supplier}</p>
-
-            {/* 상품 설명 */}
-            {product.description && (
-              <p className="text-xs text-gray-400 line-clamp-2">
-                {product.description}
-              </p>
-            )}
 
             {/* Staff 전용 정보 */}
             {isStaff && (
@@ -128,6 +125,13 @@ export default function ProductCard({
                 >
                   {product.isActive ? "노출O" : "노출X"}
                 </span>
+                <span
+                  className={
+                    product.recommend ? "text-orange-500" : "text-gray-400"
+                  }
+                >
+                  {product.recommend ? "추천O" : "추천X"}
+                </span>
               </div>
             )}
           </div>
@@ -150,7 +154,7 @@ export default function ProductCard({
             <button
               onClick={() => handleQuantityChange(1)}
               className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-lg sm:text-sm"
-              disabled={!product.inStock}
+              disabled={!product.inStock || quantity >= 10}
             >
               +
             </button>
@@ -222,32 +226,29 @@ export default function ProductCard({
         <div className="flex items-start justify-between gap-3">
           {/* 상품 정보 (왼쪽) */}
           <div className="flex-1 min-w-0">
-            {/* 상품명 & 카테고리 */}
-            <div className="mb-1">
-              <h3 className="font-semibold text-gray-900 text-lg">
-                {product.name}
-                {product.specifications && (
-                  <span>({product.specifications})</span>
-                )}
-              </h3>
-              <span className="text-base text-gray-400">
-                ({category1Name} &gt; {category2Name})
-              </span>
-            </div>
-
-            {/* 단위당 가격 & 공급처 */}
-            <div className="flex items-center gap-2 text-base text-gray-500">
-              <span>{product.pricePerUnit.toLocaleString()}원/{product.unit}</span>
-              <span>·</span>
-              <span>{product.supplier}</span>
-            </div>
+            {/* 상품명 */}
+            <h3 className="font-semibold text-gray-900 text-lg mb-1">
+              {product.name}
+              {product.specifications && (
+                <span>({product.specifications})</span>
+              )}
+            </h3>
 
             {/* 상품 설명 */}
             {product.description && (
-              <p className="text-base text-gray-400 mt-1 line-clamp-2">
+              <p className="text-base text-gray-500 mb-1 line-clamp-2">
                 {product.description}
               </p>
             )}
+
+            {/* 단위당 가격 & 공급처 */}
+            <div className="flex items-center gap-2 text-base text-gray-500">
+              <span>
+                {product.unit}당 {product.pricePerUnit.toLocaleString()}원
+              </span>
+              <span>·</span>
+              <span>{product.supplier}</span>
+            </div>
 
             {/* Staff 전용 정보 (모바일) */}
             {isStaff && (
@@ -259,14 +260,25 @@ export default function ProductCard({
                   {product.packagingIndependenceCode}
                 </span>
                 <span
-                  className={product.inStock ? "text-green-600" : "text-red-500"}
+                  className={
+                    product.inStock ? "text-green-600" : "text-red-500"
+                  }
                 >
                   {product.inStock ? "재고O" : "재고X"}
                 </span>
                 <span
-                  className={product.isActive ? "text-blue-600" : "text-gray-400"}
+                  className={
+                    product.isActive ? "text-blue-600" : "text-gray-400"
+                  }
                 >
                   {product.isActive ? "노출O" : "노출X"}
+                </span>
+                <span
+                  className={
+                    product.recommend ? "text-orange-500" : "text-gray-400"
+                  }
+                >
+                  {product.recommend ? "추천O" : "추천X"}
                 </span>
               </div>
             )}
@@ -352,35 +364,55 @@ export default function ProductCard({
 
             {/* 상세 이미지 목록 */}
             <div className="flex flex-col gap-4">
-              {product.detail1ImageUrl?.trim() && !detailImageErrors["detail1"] && (
-                <img
-                  src={product.detail1ImageUrl}
-                  alt={`${product.name} 상세 1`}
-                  className="w-full max-h-[75vh] rounded-lg object-contain"
-                  onError={() => setDetailImageErrors((prev) => ({ ...prev, detail1: true }))}
-                />
-              )}
-              {product.detail2ImageUrl?.trim() && !detailImageErrors["detail2"] && (
-                <img
-                  src={product.detail2ImageUrl}
-                  alt={`${product.name} 상세 2`}
-                  className="w-full max-h-[75vh] rounded-lg object-contain"
-                  onError={() => setDetailImageErrors((prev) => ({ ...prev, detail2: true }))}
-                />
-              )}
-              {product.detail3ImageUrl?.trim() && !detailImageErrors["detail3"] && (
-                <img
-                  src={product.detail3ImageUrl}
-                  alt={`${product.name} 상세 3`}
-                  className="w-full max-h-[75vh] rounded-lg object-contain"
-                  onError={() => setDetailImageErrors((prev) => ({ ...prev, detail3: true }))}
-                />
-              )}
-              {!product.detail1ImageUrl?.trim() && !product.detail2ImageUrl?.trim() && !product.detail3ImageUrl?.trim() && (
-                <p className="text-center text-gray-400 py-8">
-                  등록된 상세 이미지가 없습니다.
-                </p>
-              )}
+              {product.detail1ImageUrl?.trim() &&
+                !detailImageErrors["detail1"] && (
+                  <img
+                    src={product.detail1ImageUrl}
+                    alt={`${product.name} 상세 1`}
+                    className="w-full max-h-[75vh] rounded-lg object-contain"
+                    onError={() =>
+                      setDetailImageErrors((prev) => ({
+                        ...prev,
+                        detail1: true,
+                      }))
+                    }
+                  />
+                )}
+              {product.detail2ImageUrl?.trim() &&
+                !detailImageErrors["detail2"] && (
+                  <img
+                    src={product.detail2ImageUrl}
+                    alt={`${product.name} 상세 2`}
+                    className="w-full max-h-[75vh] rounded-lg object-contain"
+                    onError={() =>
+                      setDetailImageErrors((prev) => ({
+                        ...prev,
+                        detail2: true,
+                      }))
+                    }
+                  />
+                )}
+              {product.detail3ImageUrl?.trim() &&
+                !detailImageErrors["detail3"] && (
+                  <img
+                    src={product.detail3ImageUrl}
+                    alt={`${product.name} 상세 3`}
+                    className="w-full max-h-[75vh] rounded-lg object-contain"
+                    onError={() =>
+                      setDetailImageErrors((prev) => ({
+                        ...prev,
+                        detail3: true,
+                      }))
+                    }
+                  />
+                )}
+              {!product.detail1ImageUrl?.trim() &&
+                !product.detail2ImageUrl?.trim() &&
+                !product.detail3ImageUrl?.trim() && (
+                  <p className="text-center text-gray-400 py-8">
+                    등록된 상세 이미지가 없습니다.
+                  </p>
+                )}
             </div>
 
             {/* 닫기 버튼 */}

@@ -47,8 +47,8 @@ export default function CategorySelector({
             onClick={() => onSelectCategory1(category.id)}
             className={`px-5 sm:px-4 py-2.5 sm:py-2 rounded-full text-base sm:text-sm font-medium transition-colors ${
               selectedCategory1Id === category.id
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-blue-700 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }`}
           >
             {formatCategoryName(category.name, category.id)}
@@ -61,10 +61,10 @@ export default function CategorySelector({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => onSelectCategory2(null)}
-            className={`px-4 sm:px-3 py-2 sm:py-1.5 rounded-full text-sm sm:text-xs font-medium transition-colors ${
+            className={`px-5 sm:px-4 py-2.5 sm:py-2 rounded-md text-base sm:text-sm font-medium transition-colors border ${
               selectedCategory2Id === null
-                ? "bg-green-600 text-white"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                ? "bg-green-600 text-white border-green-600"
+                : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
             }`}
           >
             전체
@@ -73,10 +73,10 @@ export default function CategorySelector({
             <button
               key={category.id}
               onClick={() => onSelectCategory2(category.id)}
-              className={`px-4 sm:px-3 py-2 sm:py-1.5 rounded-full text-sm sm:text-xs font-medium transition-colors ${
+              className={`px-5 sm:px-4 py-2.5 sm:py-2 rounded-md text-base sm:text-sm font-medium transition-colors border ${
                 selectedCategory2Id === category.id
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
               }`}
             >
               {formatCategoryName(category.name, category.id)}

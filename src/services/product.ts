@@ -20,6 +20,7 @@ interface AddProductRequest {
   packagingIndependenceCode: string;
   tags: string[];
   specifications?: string;
+  recommend?: boolean;
   useDetailImageYN?: boolean;
 }
 
@@ -48,6 +49,7 @@ export interface ProductData {
   packagingIndependenceCode: string;
   tags: string[];
   specifications?: string;
+  recommend?: boolean;
   useDetailImageYN?: boolean;
   detail1ImageUrl?: string;
   detail2ImageUrl?: string;
@@ -59,6 +61,7 @@ export interface ProductData {
 interface GetProductsRequest {
   category1Id?: string;
   category2Id?: string;
+  recommendOnly?: boolean;
   limit?: number;
   startAfterId?: string;
 }
@@ -98,14 +101,15 @@ export async function getProducts(
   category1Id?: string,
   category2Id?: string,
   startAfterId?: string,
-  limit?: number
+  limit?: number,
+  recommendOnly?: boolean,
 ): Promise<{ products: ProductData[]; hasMore: boolean }> {
   const getProductsFn = httpsCallable<GetProductsRequest, GetProductsResponse>(
     functions,
     "getProducts"
   );
 
-  const result = await getProductsFn({ category1Id, category2Id, startAfterId, limit });
+  const result = await getProductsFn({ category1Id, category2Id, recommendOnly, startAfterId, limit });
   return result.data;
 }
 

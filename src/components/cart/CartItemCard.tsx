@@ -19,7 +19,7 @@ export default function CartItemCard({
     const newQuantity = quantity + delta;
     if (newQuantity <= 0) {
       onRemove(product.id);
-    } else {
+    } else if (newQuantity <= 10) {
       onUpdateQuantity(product.id, newQuantity);
     }
   };
@@ -80,7 +80,8 @@ export default function CartItemCard({
               </span>
               <button
                 onClick={() => handleQuantityChange(1)}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm"
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={quantity >= 10}
               >
                 +
               </button>

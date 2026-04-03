@@ -45,6 +45,7 @@ export default function ProductEditForm({
   // 상태
   const [inStock, setInStock] = useState(product.inStock);
   const [isActive, setIsActive] = useState(product.isActive);
+  const [recommend, setRecommend] = useState(product.recommend ?? false);
   const [useDetailImageYN, setUseDetailImageYN] = useState(product.useDetailImageYN ?? false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,6 +164,7 @@ export default function ProductEditForm({
         description: description.trim() || undefined,
         inStock,
         isActive,
+        recommend,
         orderMinQuantity,
         orderUnit: orderUnit.trim(),
         pricePerMinOrder,
@@ -345,6 +347,16 @@ export default function ProductEditForm({
                 disabled={isSubmitting}
               />
               <span className="text-base text-gray-600">노출</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={recommend}
+                onChange={(e) => setRecommend(e.target.checked)}
+                className="w-5 h-5 text-blue-600"
+                disabled={isSubmitting}
+              />
+              <span className="text-base text-gray-600">추천</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -704,6 +716,16 @@ export default function ProductEditForm({
                   disabled={isSubmitting}
                 />
                 <span className="text-xs text-gray-600">노출</span>
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={recommend}
+                  onChange={(e) => setRecommend(e.target.checked)}
+                  className="w-3.5 h-3.5 text-blue-600"
+                  disabled={isSubmitting}
+                />
+                <span className="text-xs text-gray-600">추천</span>
               </label>
               <label className="flex items-center gap-1 cursor-pointer">
                 <input

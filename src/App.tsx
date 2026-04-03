@@ -53,7 +53,10 @@ function App() {
               <Link to="/orders" className="text-gray-600 hover:text-blue-600">
                 주문내역
               </Link>
-              <Link to="/refill-ticket" className="text-gray-600 hover:text-blue-600">
+              <Link
+                to="/refill-ticket"
+                className="text-gray-600 hover:text-blue-600"
+              >
                 충전권 사용
               </Link>
               {verificationCode && (
@@ -187,10 +190,10 @@ function App() {
             </p>
             <div className="text-xs text-gray-400 space-y-1">
               <p>대표자: 정현호 </p>
-              <p>주소: 서울시 동작구 노량진동 140 1612호</p>
-              <p>문의전화: 010-4226-7330</p>
-              <p>이메일: jhhdy1@gmail.com</p>
               <p>사업자등록번호: 263-13-02948</p>
+              <p>문의전화: 050-6711-7330</p>
+              <p>주소: 서울시 동작구 노량진동 140 1612호</p>
+              <p>이메일: jhhdy1@gmail.com</p>
               <p className="pt-2">
                 <button
                   onClick={() => setIsTermsOpen(true)}

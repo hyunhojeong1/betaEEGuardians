@@ -27,6 +27,7 @@ import type { Category1, Category2, Product } from "@/types/product";
 function toProduct(data: ProductData): Product {
   return {
     ...data,
+    recommend: data.recommend ?? false,
     useDetailImageYN: data.useDetailImageYN ?? false,
     createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
     updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
@@ -45,6 +46,7 @@ export default function ShopPage() {
   const [selectedCategory2Id, setSelectedCategory2Id] = useState<string | null>(
     null,
   );
+  const [recommendOnly, setRecommendOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
@@ -80,6 +82,7 @@ export default function ShopPage() {
       category1Id?: string | null,
       category2Id?: string | null,
       query?: string,
+      filterRecommendOnly?: boolean,
     ) => {
       // 검색어가 없고 category1도 미선택이면 상품 조회하지 않음
       if (!query?.trim() && !category1Id) {
@@ -94,13 +97,21 @@ export default function ShopPage() {
           // Algolia 검색 → ID 목록 → Firestore 조회
           const ids = await searchProductIds(query.trim());
           const productData = await getProductsByIds(ids);
-          setProducts(productData.map(toProduct));
+          let results = productData.map(toProduct);
+          // 검색 결과에서도 추천 필터 적용 (클라이언트 필터)
+          if (filterRecommendOnly) {
+            results = results.filter((p) => p.recommend);
+          }
+          setProducts(results);
           setHasMore(false);
         } else {
           // 카테고리 필터링 (페이지네이션)
           const result = await getProducts(
             category1Id || undefined,
             category2Id || undefined,
+            undefined,
+            undefined,
+            filterRecommendOnly || undefined,
           );
           setProducts(result.products.map(toProduct));
           setHasMore(result.hasMore);
@@ -127,8 +138,16 @@ export default function ShopPage() {
         selectedCategory1Id || undefined,
         selectedCategory2Id || undefined,
         lastProductId,
+        undefined,
+        recommendOnly || undefined,
       );
-      setProducts((prev) => [...prev, ...result.products.map(toProduct)]);
+      setProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newProducts = result.products
+          .map(toProduct)
+          .filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newProducts];
+      });
       setHasMore(result.hasMore);
     } catch (error) {
       console.error("Failed to fetch more products:", error);
@@ -141,6 +160,7 @@ export default function ShopPage() {
     products,
     selectedCategory1Id,
     selectedCategory2Id,
+    recommendOnly,
   ]);
 
   // IntersectionObserver로 스크롤 하단 감지
@@ -193,12 +213,14 @@ export default function ShopPage() {
         selectedCategory1Id,
         selectedCategory2Id,
         debouncedSearchQuery,
+        recommendOnly,
       );
     }
   }, [
     selectedCategory1Id,
     selectedCategory2Id,
     debouncedSearchQuery,
+    recommendOnly,
     isLoading,
     fetchProducts,
   ]);
@@ -330,10 +352,9 @@ export default function ShopPage() {
 
   return (
     <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
-      {/* 타이틀 + 선택된 시간대 표시 */}
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">장보기</h1>
-        {cartTimeSlot && (
+      {/* 선택된 시간대 표시 */}
+      {cartTimeSlot && (
+        <div className="mb-4">
           <a
             href="/cart"
             className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100"
@@ -341,7 +362,12 @@ export default function ShopPage() {
             {orderDate && `${formatOrderDate(orderDate)} `}
             {cartTimeSlot.label} 배송
           </a>
-        )}
+        </div>
+      )}
+
+      {/* 검색바 (sticky) */}
+      <div className="sticky top-16 z-30 bg-gray-50 py-2 -mx-4 px-4 md:-mx-8 md:px-8 mb-4">
+        <SearchBar value={searchQuery} onChange={setSearchQuery} />
       </div>
 
       {/* 공지사항: Staff는 편집 가능, Customer는 읽기만 */}
@@ -353,11 +379,6 @@ export default function ShopPage() {
       ) : (
         <NoticeBanner comment={noticeComment} />
       )}
-
-      {/* 검색바 */}
-      <div className="mb-4">
-        <SearchBar value={searchQuery} onChange={setSearchQuery} />
-      </div>
 
       {/* 요청 배너 */}
       <div className="mb-4">
@@ -416,6 +437,23 @@ export default function ShopPage() {
           onSelectCategory2={handleCategory2Change}
         />
       </div>
+
+      {/* 추천 상품 필터 */}
+      {selectedCategory1Id && (
+        <div className="mb-4">
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={recommendOnly}
+              onChange={(e) => setRecommendOnly(e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700 font-medium">
+              현재 카테고리에서 추천 상품만 보기
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* 상품 목록 */}
       <div className="space-y-3">
