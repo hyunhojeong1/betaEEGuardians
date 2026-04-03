@@ -1,11 +1,9 @@
 import { useState } from "react";
-import type { Product, Category1, Category2 } from "@/types/product";
+import type { Product } from "@/types/product";
 
 interface ProductCardProps {
   product: Product;
   isStaff: boolean;
-  categories1?: Category1[];
-  categories2?: Category2[];
   onAddToCart: (product: Product, quantity: number) => void;
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
@@ -14,8 +12,6 @@ interface ProductCardProps {
 export default function ProductCard({
   product,
   isStaff,
-  categories1 = [],
-  categories2 = [],
   onAddToCart,
   onEdit,
   onDelete,
@@ -46,13 +42,6 @@ export default function ProductCard({
   const actualQuantity = product.orderMinQuantity * quantity;
   const quantityDisplay = `${actualQuantity}${product.orderUnit}`;
 
-  // 카테고리 이름 가져오기
-  const category1Name =
-    categories1.find((c) => c.id === product.category1Id)?.name ||
-    product.category1Id;
-  const category2Name =
-    categories2.find((c) => c.id === product.category2Id)?.name ||
-    product.category2Id;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">

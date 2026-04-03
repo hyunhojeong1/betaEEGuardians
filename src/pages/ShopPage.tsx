@@ -488,8 +488,6 @@ export default function ShopPage() {
                 key={product.id}
                 product={product}
                 isStaff={isStaff}
-                categories1={categories1}
-                categories2={categories2}
                 onAddToCart={handleAddToCart}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
