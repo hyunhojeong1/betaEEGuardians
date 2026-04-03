@@ -77,7 +77,7 @@ export default function RefillTicketPage() {
   return (
     <div className="px-4 py-6 md:px-8 md:py-10 max-w-4xl mx-auto">
       <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-6">
-        충전권 사용
+        다회용기 충전권 사용
       </h1>
 
       {/* 충전권 잔여 현황 */}
@@ -91,7 +91,7 @@ export default function RefillTicketPage() {
           </span>
         </div>
         <p className="text-xs text-blue-500 mt-1">
-          상품 주문 없이 다회용기 충전만 요청하실 수 있는 쿠폰입니다.
+          상품 주문 없이 다회용기 충전만 호출하실 수 있는 쿠폰입니다.
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export default function RefillTicketPage() {
             <span className="font-medium">1.</span>
             <span>
               상품을 주문하신 경우에는 충전권 사용이 불필요합니다. 상품 배송 시
-              용기 회수가 기본적으로 포함됩니다.
+              이전 용기 회수/충전이 기본 포함됩니다.
             </span>
           </li>
           <li className="flex gap-2">
