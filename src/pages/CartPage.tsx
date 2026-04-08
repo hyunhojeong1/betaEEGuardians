@@ -459,8 +459,8 @@ export default function CartPage() {
               <li className="flex gap-2">
                 <span className="font-medium">2.</span>
                 <span>
-                  개인 다회용기도 함께 내놓으신다면 - 용기 개수와 세척 필요
-                  여부를 알려주세요.
+                  개인 다회용기도 함께 내놓으신다면(충전) - 용기 개수와 세척
+                  필요 여부를 알려주세요.
                 </span>
               </li>
             </ol>
