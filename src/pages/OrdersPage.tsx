@@ -35,7 +35,7 @@ export default function OrdersPage() {
   const [reviewContent, setReviewContent] = useState<string>("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [reviews, setReviews] = useState<Review[]>([]);
   // deliverySlotKey -> Review 매핑
@@ -74,7 +74,7 @@ export default function OrdersPage() {
             setReviews(reviewsResponse.reviews);
             // 이미 작성한 리뷰의 deliverySlotKey를 submittedReviews에 추가
             const submittedKeys = new Set(
-              reviewsResponse.reviews.map((r) => r.deliverySlotKey)
+              reviewsResponse.reviews.map((r) => r.deliverySlotKey),
             );
             setSubmittedReviews(submittedKeys);
           }
@@ -185,7 +185,7 @@ export default function OrdersPage() {
       !confirm(
         `${formatDate(group.orderDate)} ${
           group.timeSlotLabel
-        } 주문을 취소하시겠습니까?`
+        } 주문을 취소하시겠습니까?`,
       )
     ) {
       return;
@@ -317,7 +317,7 @@ export default function OrdersPage() {
             💰 계좌이체 안내
           </p>
           <p className="text-base sm:text-sm text-yellow-700">
-            농협 302-0340-8696-31 (예금주: 이지현)
+            카카오뱅크 3333-03-7939094 (예금주: 정현호)
           </p>
           <p className="text-sm sm:text-sm text-yellow-600 mt-1">
             위 계좌로 구매 총액을 이체해 주셔야 최종 주문 완료가 됩니다. 이체가
@@ -348,8 +348,8 @@ export default function OrdersPage() {
                     item.balance > 0
                       ? "text-green-600"
                       : item.balance < 0
-                      ? "text-red-600"
-                      : "text-gray-500"
+                        ? "text-red-600"
+                        : "text-gray-500"
                   }`}
                 >
                   {item.balance}개
@@ -364,7 +364,7 @@ export default function OrdersPage() {
             <span className="text-base sm:text-sm text-purple-800 font-bold">
               {allContainerBalances.reduce(
                 (sum, item) => sum + item.balance,
-                0
+                0,
               )}
               개
             </span>
