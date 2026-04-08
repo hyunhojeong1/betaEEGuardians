@@ -173,6 +173,9 @@ export default function ProductEditForm({
         tags,
         specifications: specifications.trim() || undefined,
         useDetailImageYN,
+        detail1ImageUrl: product.detail1ImageUrl || undefined,
+        detail2ImageUrl: product.detail2ImageUrl || undefined,
+        detail3ImageUrl: product.detail3ImageUrl || undefined,
       });
       alert(result.message || "상품이 수정되었습니다.");
       onSuccess();

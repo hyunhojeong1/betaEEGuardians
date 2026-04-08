@@ -22,6 +22,9 @@ interface AddProductRequest {
   specifications?: string;
   recommend?: boolean;
   useDetailImageYN?: boolean;
+  detail1ImageUrl?: string;
+  detail2ImageUrl?: string;
+  detail3ImageUrl?: string;
 }
 
 interface AddProductResponse {

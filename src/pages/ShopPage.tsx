@@ -365,9 +365,22 @@ export default function ShopPage() {
         </div>
       )}
 
-      {/* 검색바 (sticky) */}
+      {/* 검색바 + 추천 필터 (sticky) */}
       <div className="sticky top-16 z-30 bg-gray-50 py-2 -mx-4 px-4 md:-mx-8 md:px-8 mb-4">
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        {selectedCategory1Id && (
+          <label className="inline-flex items-center gap-2 cursor-pointer mt-2">
+            <input
+              type="checkbox"
+              checked={recommendOnly}
+              onChange={(e) => setRecommendOnly(e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700 font-medium">
+              현재 카테고리에서 추천 상품만 보기
+            </span>
+          </label>
+        )}
       </div>
 
       {/* 공지사항: Staff는 편집 가능, Customer는 읽기만 */}
@@ -437,23 +450,6 @@ export default function ShopPage() {
           onSelectCategory2={handleCategory2Change}
         />
       </div>
-
-      {/* 추천 상품 필터 */}
-      {selectedCategory1Id && (
-        <div className="mb-4">
-          <label className="inline-flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={recommendOnly}
-              onChange={(e) => setRecommendOnly(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <span className="text-sm text-gray-700 font-medium">
-              현재 카테고리에서 추천 상품만 보기
-            </span>
-          </label>
-        </div>
-      )}
 
       {/* 상품 목록 */}
       <div className="space-y-3">

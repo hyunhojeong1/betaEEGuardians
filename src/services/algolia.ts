@@ -12,9 +12,9 @@ interface AlgoliaProductHit {
 }
 
 /**
- * 검색어를 2글자 바이그램 + 마지막 글자로 분절
- * "외국산나문희" → "외국 국산 산나 나문 문희 희"
- * "호박 나문희" → "호박 나문 문희 희"
+ * 검색어를 2글자 바이그램으로 분절
+ * "외국산나문희" → "외국 국산 산나 나문 문희"
+ * "호박 나문희" → "호박 나문 문희"
  * "귤" → "귤" (1글자는 그대로)
  */
 function toBigrams(query: string): string {
@@ -28,8 +28,6 @@ function toBigrams(query: string): string {
       for (let i = 0; i <= word.length - 2; i++) {
         bigrams.push(word.slice(i, i + 2));
       }
-      // 마지막 한 글자 추가 (외자 검색력 향상)
-      bigrams.push(word.slice(-1));
     }
   }
 
@@ -52,8 +50,8 @@ export async function searchProductIds(
       hitsPerPage,
       attributesToRetrieve: ["objectID"],
       queryType: "prefixAll",
-      removeWordsIfNoResults: "allOptional",
-      typoTolerance: false,
+      optionalWords: bigramQuery.split(" "),
+      typoTolerance: "strict",
     },
   });
 

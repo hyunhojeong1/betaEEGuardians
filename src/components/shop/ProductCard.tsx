@@ -149,9 +149,13 @@ export default function ProductCard({
             </button>
           </div>
 
-          {/* 가격 (모바일에서는 수량 아래에만 표시) */}
+          {/* 가격 */}
           <p className="text-xl sm:text-lg font-bold text-blue-600">
             {totalPrice.toLocaleString()}원
+          </p>
+          {/* 단위당 가격 (모바일에서만 가격 아래 표시) */}
+          <p className="text-xs text-gray-500 sm:hidden">
+            {product.unit}당 {product.pricePerUnit.toLocaleString()}원
           </p>
 
           {/* 담기/편집/삭제 버튼 (태블릿 이상에서만 표시) */}
@@ -212,120 +216,95 @@ export default function ProductCard({
 
       {/* 모바일 전용: 상품 정보 + 담기 버튼 (이미지 아래에 표시) */}
       <div className="mt-3 sm:hidden">
-        <div className="flex items-start justify-between gap-3">
-          {/* 상품 정보 (왼쪽) */}
-          <div className="flex-1 min-w-0">
-            {/* 상품명 */}
-            <h3 className="font-semibold text-gray-900 text-lg mb-1">
-              {product.name}
-              {product.specifications && (
-                <span>({product.specifications})</span>
+        {/* 상품 정보 (가로 폭 전체 사용) */}
+        <h3 className="font-semibold text-gray-900 text-lg mb-1">
+          {product.name}
+          {product.specifications && (
+            <span>({product.specifications})</span>
+          )}
+        </h3>
+
+        {/* 상품 설명 */}
+        {product.description && (
+          <p className="text-sm text-gray-500 mb-1 line-clamp-2">
+            {product.description}
+          </p>
+        )}
+
+        {/* 공급처 */}
+        <p className="text-xs text-gray-500">{product.supplier}</p>
+
+        {/* Staff 전용 정보 (모바일) */}
+        {isStaff && (
+          <div className="flex items-center gap-2 text-xs mt-1">
+            <span className="text-gray-400">
+              {product.estimatedVolumePerMinUnit}ml
+            </span>
+            <span className="text-gray-400 font-mono">
+              {product.packagingIndependenceCode}
+            </span>
+            <span
+              className={
+                product.inStock ? "text-green-600" : "text-red-500"
+              }
+            >
+              {product.inStock ? "재고O" : "재고X"}
+            </span>
+            <span
+              className={
+                product.isActive ? "text-blue-600" : "text-gray-400"
+              }
+            >
+              {product.isActive ? "노출O" : "노출X"}
+            </span>
+            <span
+              className={
+                product.recommend ? "text-orange-500" : "text-gray-400"
+              }
+            >
+              {product.recommend ? "추천O" : "추천X"}
+            </span>
+          </div>
+        )}
+
+        {/* 담기/편집/삭제 버튼 (카드 맨 아래, 세로폭 좁게) */}
+        <div className="mt-2">
+          {!isStaff && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleAddToCart}
+                disabled={!product.inStock}
+                className="flex-1 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {showAddedMessage ? "담았습니다!" : !product.inStock ? "품절" : "담기"}
+              </button>
+              {product.useDetailImageYN && (
+                <button
+                  onClick={() => setShowDetailModal(true)}
+                  className="flex-1 py-1.5 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                  상세
+                </button>
               )}
-            </h3>
-
-            {/* 상품 설명 */}
-            {product.description && (
-              <p className="text-base text-gray-500 mb-1 line-clamp-2">
-                {product.description}
-              </p>
-            )}
-
-            {/* 단위당 가격 & 공급처 */}
-            <div className="flex items-center gap-2 text-base text-gray-500">
-              <span>
-                {product.unit}당 {product.pricePerUnit.toLocaleString()}원
-              </span>
-              <span>·</span>
-              <span>{product.supplier}</span>
             </div>
+          )}
 
-            {/* Staff 전용 정보 (모바일) */}
-            {isStaff && (
-              <div className="flex items-center gap-2 text-base mt-1">
-                <span className="text-gray-400">
-                  {product.estimatedVolumePerMinUnit}ml
-                </span>
-                <span className="text-gray-400 font-mono">
-                  {product.packagingIndependenceCode}
-                </span>
-                <span
-                  className={
-                    product.inStock ? "text-green-600" : "text-red-500"
-                  }
-                >
-                  {product.inStock ? "재고O" : "재고X"}
-                </span>
-                <span
-                  className={
-                    product.isActive ? "text-blue-600" : "text-gray-400"
-                  }
-                >
-                  {product.isActive ? "노출O" : "노출X"}
-                </span>
-                <span
-                  className={
-                    product.recommend ? "text-orange-500" : "text-gray-400"
-                  }
-                >
-                  {product.recommend ? "추천O" : "추천X"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* 담기/편집/삭제 버튼 (오른쪽) */}
-          <div className="flex-shrink-0">
-            {/* 담기 버튼 (Customer만) */}
-            {!isStaff && (
-              <div className="flex flex-col items-end">
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!product.inStock}
-                    className="px-6 py-2.5 text-lg bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    담기
-                  </button>
-                  {product.useDetailImageYN && (
-                    <button
-                      onClick={() => setShowDetailModal(true)}
-                      className="px-6 py-2.5 text-lg bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                    >
-                      상세
-                    </button>
-                  )}
-                </div>
-                {showAddedMessage && (
-                  <span className="text-base text-green-600 mt-1">
-                    담았습니다!
-                  </span>
-                )}
-                {!product.inStock && (
-                  <span className="text-base text-red-500 font-medium mt-1">
-                    품절
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Staff 전용 편집/삭제 버튼 */}
-            {isStaff && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onEdit?.(product)}
-                  className="px-4 py-2 text-base bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                >
-                  편집
-                </button>
-                <button
-                  onClick={() => onDelete?.(product)}
-                  className="px-4 py-2 text-base bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  삭제
-                </button>
-              </div>
-            )}
-          </div>
+          {isStaff && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit?.(product)}
+                className="flex-1 py-1.5 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              >
+                편집
+              </button>
+              <button
+                onClick={() => onDelete?.(product)}
+                className="flex-1 py-1.5 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                삭제
+              </button>
+            </div>
+          )}
         </div>
       </div>
       {/* 상세 이미지 모달 */}
