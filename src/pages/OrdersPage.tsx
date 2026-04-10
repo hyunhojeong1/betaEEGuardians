@@ -314,7 +314,12 @@ export default function OrdersPage() {
       {userRole === "customer" && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
           <p className="text-base sm:text-sm text-yellow-800 font-medium mb-2">
-            💰 계좌이체 안내
+            * 계좌이체 안내:
+            <br />
+            사전 체험시 개인정보 미사용으로 간편/신용카드 결제는 지원되지
+            않습니다.
+            <br />
+            다소 불편하시더라도 양해 부탁드립니다.
           </p>
           <p className="text-base sm:text-sm text-yellow-700">
             카카오뱅크 3333-03-7939094 (예금주: 정현호)
