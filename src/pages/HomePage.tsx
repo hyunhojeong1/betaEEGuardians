@@ -23,14 +23,13 @@ const featureCards = [
   },
   {
     image: gemini4,
-    title: "03 식품은 배송, 쓰레기는 수거",
-    description: "음식물, 재활용쓰레기 분리배출은 지환수에 맡겨주세요!",
+    title: "03 일회용 포장재는 회수하여 재활용",
+    description: "스티로폼, 아이스팩 등 버려지는 포장재를 지환수에 맡겨주세요.",
   },
   {
     image: gemini5,
     title: "04 오염을 최소화하는 재순환",
-    description:
-      "수거한 음식물 양만큼, 자연 순환 과정을 따라 작물로 재탄생해요.",
+    description: "포장-배송-회수-세척 사이클에서 오염을 최소화해요.",
   },
 ];
 
